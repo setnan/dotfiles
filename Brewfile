@@ -14,6 +14,9 @@ brew "tree"
 # Editor
 brew "micro"
 
+# Apps
+cask "alfred"
+
 # Dev
 brew "gh"
 brew "node"

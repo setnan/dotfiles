@@ -7,3 +7,9 @@ zsh/.zshrc
 zsh/.zsh_history
 zsh/.zsh_sessions
 zsh_profile.*
+
+# Alfred: sync folder lives in alfred/. Keep settings, snippets and workflows,
+# skip machine pairings and dependency dirs inside workflows.
+alfred/Alfred.alfredpreferences/remote/
+alfred/Alfred.alfredpreferences/workflows/*/node_modules/
+alfred/Alfred.alfredpreferences/workflows/*/.venv/

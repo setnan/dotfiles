@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>customSites</key>
+	<dict>
+		<key>2189FC30-8A30-452E-A266-271DF9ADADA1</key>
+		<dict>
+			<key>enabled</key>
+			<true/>
+			<key>keyword</key>
+			<string>hexdocs</string>
+			<key>text</key>
+			<string>Hexdocs</string>
+			<key>url</key>
+			<string>https://hexdocs.pm/{query}</string>
+		</dict>
+		<key>90A90A47-37A8-483A-9384-3B40BAA3AAFF</key>
+		<dict>
+			<key>enabled</key>
+			<true/>
+			<key>keyword</key>
+			<string>hexpm</string>
+			<key>text</key>
+			<string>Hexdocs PM</string>
+			<key>url</key>
+			<string>https://hex.pm/packages?search={query}</string>
+		</dict>
+	</dict>
+</dict>
+</plist>
