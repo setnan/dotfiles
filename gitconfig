@@ -1,0 +1,35 @@
+[user]
+  name = Simon Etnan
+  email = 111985341+setnan@users.noreply.github.com
+[github]
+  user = setnan
+[push]
+  default = simple
+  autoSetupRemote = true
+[color]
+  branch = auto
+  status = auto
+  diff = auto
+[alias]
+  # Log display with train tracks.
+  l = log --graph --pretty=format':%C(yellow)%h%Cblue%d%Creset %s %C(blue) %an, %ar%Creset'
+  # Alternate log display from Scott Chacon
+  lol = log --pretty=oneline --abbrev-commit --graph --decorate
+  unstage = reset HEAD
+  staged = diff --cached
+  unstaged = diff
+[core]
+  editor = micro
+  excludesfile = ~/.gitignore_global
+  autocrlf = false
+[pull]
+  rebase = true
+[init]
+  defaultBranch = main
+[filter "lfs"]
+  clean = git-lfs clean -- %f
+  smudge = git-lfs smudge -- %f
+  process = git-lfs filter-process
+  required = true
+[include]
+  path = ~/.gitconfig_local

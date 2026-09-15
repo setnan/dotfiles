@@ -1,0 +1,9 @@
+*.log
+*.zwc
+.DS_Store
+
+zsh/.zcompdump*
+zsh/.zshrc
+zsh/.zsh_history
+zsh/.zsh_sessions
+zsh_profile.*

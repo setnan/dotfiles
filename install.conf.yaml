@@ -1,0 +1,24 @@
+- defaults:
+    link:
+      relink: true
+      create: true
+
+- clean: ['~', '~/.config']
+
+- shell:
+  - description: Installing submodules
+    command: "[ -d .git ] && git submodule update --init --recursive || true"
+  - description: Fetch zgenom if missing
+    command: "[ -f zgenom/zgenom.zsh ] || git clone https://github.com/jandamm/zgenom.git zgenom"
+
+- link:
+    ~/.zgenom: zgenom
+    ~/.zshenv: zshenv.zsh
+    ~/.config/zsh: zsh
+    ~/.config/zsh/.zshrc: zsh/zshrc.zsh
+    ~/.gitconfig: gitconfig
+    ~/.gitignore_global: gitignore_global
+    ~/.editorconfig: editorconfig
+    ~/.config/starship.toml: starship.toml
+    ~/.config/micro/settings.json: micro/settings.json
+    ~/.config/micro/bindings.json: micro/bindings.json
