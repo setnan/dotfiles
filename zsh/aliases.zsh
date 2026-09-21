@@ -1,6 +1,7 @@
 # Global aliases
 
 alias zshrefresh="exec zsh"
+alias reload='source "$ZDOTDIR/.zshrc"'   # last zshrc på nytt uten å starte skallet
 alias uke='date +%V'
 alias isodate="date +'%Y-%m-%dT%H:%M:%SZ'"
 
@@ -15,6 +16,9 @@ if (( $+commands[eza] )); then
   alias ll='eza -l --icons --group-directories-first'
   alias la='eza -la --icons --group-directories-first'
   alias lt='eza --tree --level=2 --icons --group-directories-first'
+  alias lg='eza -l --git --icons --group-directories-first'                       # git-status per fil
+  alias ltg='eza --tree --level=2 --git-ignore --icons --group-directories-first'  # tre uten gitignored støy
+  alias lm='eza -la -s modified --icons --group-directories-first'                # nyeste nederst
 fi
 
 # Git
@@ -23,6 +27,7 @@ alias gs='g status'
 alias gau='g add -u .'
 alias gun='g reset HEAD'
 alias gdc='g diff --cached'
+alias gdn='g diff --no-index'   # diff to vilkårlige filer/mapper, uavhengig av git-historikk
 alias gwtb='g worktree add -b'
 alias gwta='g worktree add'
 alias gwtr='g worktree remove'
