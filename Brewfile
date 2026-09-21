@@ -19,6 +19,7 @@ cask "alfred"
 
 # Dev
 brew "gh"
+brew "1password-cli"   # brukes av 1Password-workflowen i Alfred (keyword 1p)
 brew "node"
 brew "elixir"
 brew "elixir-ls"

@@ -1,0 +1,747 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>bundleid</key>
+	<string>no.simonetnan.audioswitch</string>
+	<key>connections</key>
+	<dict>
+		<key>4AE3DAE6-6356-4A81-A73A-84F84D45E3AC</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>D40E8CD7-B3FD-4451-879A-1D07CFE21227</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>4D335146-D64F-4071-A472-0BB9CBD912A8</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>C6220C77-AE96-4828-BA2B-CB994C5CA5BF</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>826AE38C-5C8B-4445-AC98-2E270ED9465C</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>C2AFF64B-A276-4E71-9253-7DE46EF5D7C2</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>A220C5F1-DC5F-4936-958A-2B2725BF0A37</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>99541F92-2855-4284-93B0-0BF179C7C7F4</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>AF177F5F-75FA-4C82-9E97-FE6ADB769449</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>E2B6D54C-98FE-4A61-8490-2A8BDF241DCD</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>B4378026-FB50-47A4-AFE7-BFC96D72F5B7</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>7733050A-4F79-4AA4-81CD-68E914A938EC</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>E9EBFAA2-D630-4579-B534-8533B6F8B05B</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>ECA8D3CD-7458-43AB-90F9-D783E7583D42</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>FAAE31A2-994C-4D63-92EF-F3AE5EE676BD</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>F40E45AD-FDA0-4E98-82D0-9A1204981FBE</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+	</dict>
+	<key>createdby</key>
+	<string>Simon Etnan</string>
+	<key>description</key>
+	<string>Bytt systemets lydutgang mellom hodetelefoner+BlackHole og MacBook-høyttalere+BlackHole (for å ta opp systemlyd samtidig som du hører den)</string>
+	<key>disabled</key>
+	<false/>
+	<key>name</key>
+	<string>Bytt lydutgang</string>
+	<key>objects</key>
+	<array>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argumenttype</key>
+				<integer>2</integer>
+				<key>keyword</key>
+				<string>hodetelefoner</string>
+				<key>skipuniversalaction</key>
+				<true/>
+				<key>subtext</key>
+				<string>Bytt systemutgang til BQCE + BlackHole 2ch</string>
+				<key>text</key>
+				<string>Lyd: Hodetelefoner + BlackHole</string>
+				<key>withspace</key>
+				<false/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.keyword</string>
+			<key>uid</key>
+			<string>A220C5F1-DC5F-4936-958A-2B2725BF0A37</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>script</key>
+				<string>/opt/homebrew/bin/SwitchAudioSource -s "Hodetelefoner+BlackHole"</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>type</key>
+				<integer>11</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>99541F92-2855-4284-93B0-0BF179C7C7F4</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>script</key>
+				<string>/opt/homebrew/bin/SwitchAudioSource -s "MacBook+BlackHole"</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>type</key>
+				<integer>11</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>D40E8CD7-B3FD-4451-879A-1D07CFE21227</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argumenttype</key>
+				<integer>2</integer>
+				<key>keyword</key>
+				<string>høyttalere</string>
+				<key>skipuniversalaction</key>
+				<true/>
+				<key>subtext</key>
+				<string>Bytt systemutgang til MacBook-høyttalere + BlackHole 2ch</string>
+				<key>text</key>
+				<string>Lyd: MacBook-høyttalere + BlackHole</string>
+				<key>withspace</key>
+				<false/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.keyword</string>
+			<key>uid</key>
+			<string>4AE3DAE6-6356-4A81-A73A-84F84D45E3AC</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argumenttype</key>
+				<integer>2</integer>
+				<key>keyword</key>
+				<string>kunhodetelefoner</string>
+				<key>skipuniversalaction</key>
+				<true/>
+				<key>subtext</key>
+				<string>Bytt systemutgang til BQCE (uten BlackHole, normal volumkontroll)</string>
+				<key>text</key>
+				<string>Lyd: Kun hodetelefoner</string>
+				<key>withspace</key>
+				<false/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.keyword</string>
+			<key>uid</key>
+			<string>4D335146-D64F-4071-A472-0BB9CBD912A8</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>script</key>
+				<string>/opt/homebrew/bin/SwitchAudioSource -s "BQCE"</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>type</key>
+				<integer>11</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>C6220C77-AE96-4828-BA2B-CB994C5CA5BF</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argumenttype</key>
+				<integer>2</integer>
+				<key>keyword</key>
+				<string>kunhøyttaler</string>
+				<key>skipuniversalaction</key>
+				<true/>
+				<key>subtext</key>
+				<string>Bytt systemutgang til MacBook Pro-høyttalere (uten BlackHole, normal volumkontroll)</string>
+				<key>text</key>
+				<string>Lyd: Kun høyttaler</string>
+				<key>withspace</key>
+				<false/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.keyword</string>
+			<key>uid</key>
+			<string>AF177F5F-75FA-4C82-9E97-FE6ADB769449</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>script</key>
+				<string>/opt/homebrew/bin/SwitchAudioSource -s "MacBook Pro-høyttalere"</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>type</key>
+				<integer>11</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>E2B6D54C-98FE-4A61-8490-2A8BDF241DCD</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argumenttype</key>
+				<integer>2</integer>
+				<key>keyword</key>
+				<string>record</string>
+				<key>skipuniversalaction</key>
+				<true/>
+				<key>subtext</key>
+				<string>Tar opp systemlyd fra BlackHole 2ch til ~/Downloads</string>
+				<key>text</key>
+				<string>Start opptak (BlackHole)</string>
+				<key>withspace</key>
+				<false/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.keyword</string>
+			<key>uid</key>
+			<string>FAAE31A2-994C-4D63-92EF-F3AE5EE676BD</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>script</key>
+				<string>readonly pid_file="${alfred_workflow_data}/recording.pid"
+readonly label_file="${alfred_workflow_data}/recording.label"
+readonly log_file="${alfred_workflow_data}/ffmpeg.log"
+readonly label="com.simonetnan.blackhole-recording"
+mkdir -p "${alfred_workflow_data}"
+
+if [[ -f "${pid_file}" ]] &amp;&amp; kill -0 "$(&lt; "${pid_file}")" 2&gt;/dev/null; then
+  osascript -e 'display notification "Opptak pågår allerede" with title "BlackHole"'
+  exit 0
+fi
+
+if /opt/homebrew/bin/SwitchAudioSource -a -t output | grep -qx "BQCE"; then
+  /opt/homebrew/bin/SwitchAudioSource -s "Hodetelefoner+BlackHole"
+else
+  /opt/homebrew/bin/SwitchAudioSource -s "MacBook+BlackHole"
+fi
+
+sleep 0.5
+
+readonly device_index="$(/opt/homebrew/bin/ffmpeg -f avfoundation -list_devices true -i "" 2&gt;&amp;1 | grep "BlackHole 2ch" | grep -oE '\[[0-9]+\]' | head -1 | tr -d '[]')"
+readonly outfile="${HOME}/Downloads/$(date +%Y%m%d-%H%M%S).wav"
+
+launchctl remove "${label}" 2&gt;/dev/null
+launchctl submit -l "${label}" -o "${log_file}" -e "${log_file}" -- /opt/homebrew/bin/ffmpeg -f avfoundation -i ":${device_index}" -ar 44100 -y "${outfile}"
+
+sleep 0.5
+readonly pid="$(launchctl list "${label}" 2&gt;/dev/null | grep '"PID"' | grep -oE '[0-9]+')"
+echo "${pid}" &gt; "${pid_file}"
+echo "${label}" &gt; "${label_file}"
+echo "${outfile}" &gt; "${alfred_workflow_data}/last_recording.txt"
+
+osascript -e "display notification \"${outfile##*/}\" with title \"Opptak startet\""
+</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>type</key>
+				<integer>11</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>F40E45AD-FDA0-4E98-82D0-9A1204981FBE</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argumenttype</key>
+				<integer>2</integer>
+				<key>keyword</key>
+				<string>stoprecording</string>
+				<key>skipuniversalaction</key>
+				<true/>
+				<key>subtext</key>
+				<string>Stopper pågående opptak og lagrer WAV-filen i ~/Downloads</string>
+				<key>text</key>
+				<string>Stopp opptak (BlackHole)</string>
+				<key>withspace</key>
+				<false/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.keyword</string>
+			<key>uid</key>
+			<string>B4378026-FB50-47A4-AFE7-BFC96D72F5B7</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>script</key>
+				<string>readonly pid_file="${alfred_workflow_data}/recording.pid"
+readonly label_file="${alfred_workflow_data}/recording.label"
+
+if [[ ! -f "${pid_file}" ]] || ! kill -0 "$(&lt; "${pid_file}")" 2&gt;/dev/null; then
+  osascript -e 'display notification "Ingen aktivt opptak" with title "BlackHole"'
+  exit 0
+fi
+
+readonly pid="$(&lt; "${pid_file}")"
+kill -INT "${pid}"
+
+for i in {1..25}; do
+  kill -0 "${pid}" 2&gt;/dev/null || break
+  sleep 0.2
+done
+
+if [[ -f "${label_file}" ]]; then
+  launchctl remove "$(&lt; "${label_file}")" 2&gt;/dev/null
+fi
+
+rm -f "${pid_file}" "${label_file}"
+
+if /opt/homebrew/bin/SwitchAudioSource -a -t output | grep -qx "BQCE"; then
+  /opt/homebrew/bin/SwitchAudioSource -s "BQCE"
+else
+  /opt/homebrew/bin/SwitchAudioSource -s "MacBook Pro-høyttalere"
+fi
+
+readonly outfile="$(&lt; "${alfred_workflow_data}/last_recording.txt" 2&gt;/dev/null)"
+osascript -e "display notification \"${outfile##*/}\" with title \"Opptak lagret\""
+</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>type</key>
+				<integer>11</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>7733050A-4F79-4AA4-81CD-68E914A938EC</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argumenttype</key>
+				<integer>2</integer>
+				<key>keyword</key>
+				<string>transcribenb</string>
+				<key>skipuniversalaction</key>
+				<true/>
+				<key>subtext</key>
+				<string>Transkriberer nyeste lydfil i Downloads til norsk tekst</string>
+				<key>text</key>
+				<string>Transkriber (norsk bokmål)</string>
+				<key>withspace</key>
+				<false/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.keyword</string>
+			<key>uid</key>
+			<string>826AE38C-5C8B-4445-AC98-2E270ED9465C</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>script</key>
+				<string>readonly lang="no"
+readonly model="${HOME}/.whisper-models/ggml-nb-whisper-large.bin"
+readonly workdir="${alfred_workflow_data}"
+readonly label="com.simonetnan.transcribe-nb"
+readonly script_file="${workdir}/transcribe_nb.sh"
+mkdir -p "${workdir}"
+
+readonly src="$(find "${HOME}/Downloads" -maxdepth 1 -type f \( -iname '*.wav' -o -iname '*.m4a' -o -iname '*.mp3' -o -iname '*.aac' \) -exec stat -f '%m %N' {} \; | sort -rn | head -1 | cut -d' ' -f2-)"
+
+if [[ -z "${src}" ]]; then
+  osascript -e 'display notification "Fant ingen lydfil i Downloads" with title "Transkribering"'
+  exit 0
+fi
+
+cat &gt; "${script_file}" &lt;&lt;SCRIPT
+#!/bin/zsh
+src="${src}"
+lang="${lang}"
+model="${model}"
+base="\${src:t:r}"
+wav16="${workdir}/\${base}-16k.wav"
+outbase="${HOME}/Downloads/\${base}"
+
+/opt/homebrew/bin/ffmpeg -y -i "\${src}" -ar 16000 -ac 1 "\${wav16}"
+/opt/homebrew/bin/whisper-cli -m "\${model}" -f "\${wav16}" -l "\${lang}" -otxt -of "\${outbase}"
+rm -f "\${wav16}"
+osascript -e "display notification \"\${base}.txt\" with title \"Transkribering ferdig (\${lang})\""
+SCRIPT
+chmod +x "${script_file}"
+
+launchctl remove "${label}" 2&gt;/dev/null
+launchctl submit -l "${label}" -o "${workdir}/transcribe.log" -e "${workdir}/transcribe.log" -- /bin/zsh "${script_file}"
+
+osascript -e "display notification \"$(basename "${src}")\" with title \"Transkribering startet (no)\""
+</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>type</key>
+				<integer>11</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>C2AFF64B-A276-4E71-9253-7DE46EF5D7C2</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argumenttype</key>
+				<integer>2</integer>
+				<key>keyword</key>
+				<string>transcribeen</string>
+				<key>skipuniversalaction</key>
+				<true/>
+				<key>subtext</key>
+				<string>Transcribes the newest audio file in Downloads to English text</string>
+				<key>text</key>
+				<string>Transcribe (English)</string>
+				<key>withspace</key>
+				<false/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.keyword</string>
+			<key>uid</key>
+			<string>E9EBFAA2-D630-4579-B534-8533B6F8B05B</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>script</key>
+				<string>readonly lang="en"
+readonly model="${HOME}/.whisper-models/ggml-nb-whisper-large.bin"
+readonly workdir="${alfred_workflow_data}"
+readonly label="com.simonetnan.transcribe-en"
+readonly script_file="${workdir}/transcribe_en.sh"
+mkdir -p "${workdir}"
+
+readonly src="$(find "${HOME}/Downloads" -maxdepth 1 -type f \( -iname '*.wav' -o -iname '*.m4a' -o -iname '*.mp3' -o -iname '*.aac' \) -exec stat -f '%m %N' {} \; | sort -rn | head -1 | cut -d' ' -f2-)"
+
+if [[ -z "${src}" ]]; then
+  osascript -e 'display notification "Fant ingen lydfil i Downloads" with title "Transkribering"'
+  exit 0
+fi
+
+cat &gt; "${script_file}" &lt;&lt;SCRIPT
+#!/bin/zsh
+src="${src}"
+lang="${lang}"
+model="${model}"
+base="\${src:t:r}"
+wav16="${workdir}/\${base}-16k.wav"
+outbase="${HOME}/Downloads/\${base}"
+
+/opt/homebrew/bin/ffmpeg -y -i "\${src}" -ar 16000 -ac 1 "\${wav16}"
+/opt/homebrew/bin/whisper-cli -m "\${model}" -f "\${wav16}" -l "\${lang}" -otxt -of "\${outbase}"
+rm -f "\${wav16}"
+osascript -e "display notification \"\${base}.txt\" with title \"Transkribering ferdig (\${lang})\""
+SCRIPT
+chmod +x "${script_file}"
+
+launchctl remove "${label}" 2&gt;/dev/null
+launchctl submit -l "${label}" -o "${workdir}/transcribe.log" -e "${workdir}/transcribe.log" -- /bin/zsh "${script_file}"
+
+osascript -e "display notification \"$(basename "${src}")\" with title \"Transkribering startet (en)\""
+</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>type</key>
+				<integer>11</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>ECA8D3CD-7458-43AB-90F9-D783E7583D42</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+	</array>
+	<key>readme</key>
+	<string>Krever switchaudio-osx (brew install switchaudio-osx) og to Multi-Output-enheter satt opp i Audio MIDI Setup: 'Hodetelefoner+BlackHole' og 'MacBook+BlackHole', begge med BlackHole 2ch inkludert.</string>
+	<key>uidata</key>
+	<dict>
+		<key>4AE3DAE6-6356-4A81-A73A-84F84D45E3AC</key>
+		<dict>
+			<key>xpos</key>
+			<real>200.0</real>
+			<key>ypos</key>
+			<real>350.0</real>
+		</dict>
+		<key>4D335146-D64F-4071-A472-0BB9CBD912A8</key>
+		<dict>
+			<key>xpos</key>
+			<real>200.0</real>
+			<key>ypos</key>
+			<real>500.0</real>
+		</dict>
+		<key>7733050A-4F79-4AA4-81CD-68E914A938EC</key>
+		<dict>
+			<key>xpos</key>
+			<real>450.0</real>
+			<key>ypos</key>
+			<real>950.0</real>
+		</dict>
+		<key>826AE38C-5C8B-4445-AC98-2E270ED9465C</key>
+		<dict>
+			<key>xpos</key>
+			<real>200.0</real>
+			<key>ypos</key>
+			<real>1100.0</real>
+		</dict>
+		<key>99541F92-2855-4284-93B0-0BF179C7C7F4</key>
+		<dict>
+			<key>xpos</key>
+			<real>450.0</real>
+			<key>ypos</key>
+			<real>200.0</real>
+		</dict>
+		<key>A220C5F1-DC5F-4936-958A-2B2725BF0A37</key>
+		<dict>
+			<key>xpos</key>
+			<real>200.0</real>
+			<key>ypos</key>
+			<real>200.0</real>
+		</dict>
+		<key>AF177F5F-75FA-4C82-9E97-FE6ADB769449</key>
+		<dict>
+			<key>xpos</key>
+			<real>200.0</real>
+			<key>ypos</key>
+			<real>650.0</real>
+		</dict>
+		<key>B4378026-FB50-47A4-AFE7-BFC96D72F5B7</key>
+		<dict>
+			<key>xpos</key>
+			<real>200.0</real>
+			<key>ypos</key>
+			<real>950.0</real>
+		</dict>
+		<key>C2AFF64B-A276-4E71-9253-7DE46EF5D7C2</key>
+		<dict>
+			<key>xpos</key>
+			<real>450.0</real>
+			<key>ypos</key>
+			<real>1100.0</real>
+		</dict>
+		<key>C6220C77-AE96-4828-BA2B-CB994C5CA5BF</key>
+		<dict>
+			<key>xpos</key>
+			<real>450.0</real>
+			<key>ypos</key>
+			<real>500.0</real>
+		</dict>
+		<key>D40E8CD7-B3FD-4451-879A-1D07CFE21227</key>
+		<dict>
+			<key>xpos</key>
+			<real>450.0</real>
+			<key>ypos</key>
+			<real>350.0</real>
+		</dict>
+		<key>E2B6D54C-98FE-4A61-8490-2A8BDF241DCD</key>
+		<dict>
+			<key>xpos</key>
+			<real>450.0</real>
+			<key>ypos</key>
+			<real>650.0</real>
+		</dict>
+		<key>E9EBFAA2-D630-4579-B534-8533B6F8B05B</key>
+		<dict>
+			<key>xpos</key>
+			<real>200.0</real>
+			<key>ypos</key>
+			<real>1250.0</real>
+		</dict>
+		<key>ECA8D3CD-7458-43AB-90F9-D783E7583D42</key>
+		<dict>
+			<key>xpos</key>
+			<real>450.0</real>
+			<key>ypos</key>
+			<real>1250.0</real>
+		</dict>
+		<key>F40E45AD-FDA0-4E98-82D0-9A1204981FBE</key>
+		<dict>
+			<key>xpos</key>
+			<real>450.0</real>
+			<key>ypos</key>
+			<real>800.0</real>
+		</dict>
+		<key>FAAE31A2-994C-4D63-92EF-F3AE5EE676BD</key>
+		<dict>
+			<key>xpos</key>
+			<real>200.0</real>
+			<key>ypos</key>
+			<real>800.0</real>
+		</dict>
+	</dict>
+	<key>userconfigurationconfig</key>
+	<array/>
+	<key>version</key>
+	<string>1.0</string>
+	<key>webaddress</key>
+	<string></string>
+</dict>
+</plist>
