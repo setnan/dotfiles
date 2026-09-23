@@ -337,15 +337,14 @@
 				<integer>102</integer>
 				<key>script</key>
 				<string>readonly pid_file="${alfred_workflow_data}/recording.pid"
-readonly label_file="${alfred_workflow_data}/recording.label"
 readonly log_file="${alfred_workflow_data}/ffmpeg.log"
-readonly label="com.simonetnan.blackhole-recording"
 mkdir -p "${alfred_workflow_data}"
 
 if [[ -f "${pid_file}" ]] &amp;&amp; kill -0 "$(&lt; "${pid_file}")" 2&gt;/dev/null; then
   osascript -e 'display notification "Opptak pågår allerede" with title "BlackHole"'
   exit 0
 fi
+rm -f "${pid_file}"
 
 if /opt/homebrew/bin/SwitchAudioSource -a -t output | grep -qx "BQCE"; then
   /opt/homebrew/bin/SwitchAudioSource -s "Hodetelefoner+BlackHole"
@@ -358,13 +357,13 @@ sleep 0.5
 readonly device_index="$(/opt/homebrew/bin/ffmpeg -f avfoundation -list_devices true -i "" 2&gt;&amp;1 | grep "BlackHole 2ch" | grep -oE '\[[0-9]+\]' | head -1 | tr -d '[]')"
 readonly outfile="${HOME}/Downloads/$(date +%Y%m%d-%H%M%S).wav"
 
-launchctl remove "${label}" 2&gt;/dev/null
-launchctl submit -l "${label}" -o "${log_file}" -e "${log_file}" -- /opt/homebrew/bin/ffmpeg -f avfoundation -i ":${device_index}" -ar 44100 -y "${outfile}"
+# Kjøres direkte i bakgrunnen (ikke launchctl submit – launchd restarter slike jobber
+# når de avsluttes, og overskrev opptaket ved stopp 2026-09-23). -n = nekt å overskrive.
+nohup /opt/homebrew/bin/ffmpeg -nostdin -hide_banner -f avfoundation -i ":${device_index}" -ar 44100 -n "${outfile}" &gt;&gt; "${log_file}" 2&gt;&amp;1 &lt; /dev/null &amp;
+readonly pid=$!
+disown
 
-sleep 0.5
-readonly pid="$(launchctl list "${label}" 2&gt;/dev/null | grep '"PID"' | grep -oE '[0-9]+')"
 echo "${pid}" &gt; "${pid_file}"
-echo "${label}" &gt; "${label_file}"
 echo "${outfile}" &gt; "${alfred_workflow_data}/last_recording.txt"
 
 osascript -e "display notification \"${outfile##*/}\" with title \"Opptak startet\""
@@ -415,26 +414,27 @@ osascript -e "display notification \"${outfile##*/}\" with title \"Opptak starte
 				<integer>102</integer>
 				<key>script</key>
 				<string>readonly pid_file="${alfred_workflow_data}/recording.pid"
-readonly label_file="${alfred_workflow_data}/recording.label"
 
 if [[ ! -f "${pid_file}" ]] || ! kill -0 "$(&lt; "${pid_file}")" 2&gt;/dev/null; then
+  rm -f "${pid_file}"
   osascript -e 'display notification "Ingen aktivt opptak" with title "BlackHole"'
   exit 0
 fi
 
 readonly pid="$(&lt; "${pid_file}")"
-kill -INT "${pid}"
 
-for i in {1..25}; do
+# Ctrl-C lar ffmpeg skrive ferdig WAV-headeren. Vent til prosessen er borte.
+kill -INT "${pid}"
+for i in {1..50}; do
   kill -0 "${pid}" 2&gt;/dev/null || break
   sleep 0.2
 done
-
-if [[ -f "${label_file}" ]]; then
-  launchctl remove "$(&lt; "${label_file}")" 2&gt;/dev/null
+if kill -0 "${pid}" 2&gt;/dev/null; then
+  kill -TERM "${pid}"
+  sleep 1
 fi
 
-rm -f "${pid_file}" "${label_file}"
+rm -f "${pid_file}"
 
 if /opt/homebrew/bin/SwitchAudioSource -a -t output | grep -qx "BQCE"; then
   /opt/homebrew/bin/SwitchAudioSource -s "BQCE"
@@ -443,7 +443,8 @@ else
 fi
 
 readonly outfile="$(&lt; "${alfred_workflow_data}/last_recording.txt" 2&gt;/dev/null)"
-osascript -e "display notification \"${outfile##*/}\" with title \"Opptak lagret\""
+readonly secs="$(/opt/homebrew/bin/ffprobe -v error -show_entries format=duration -of csv=p=0 "${outfile}" 2&gt;/dev/null | cut -d. -f1)"
+osascript -e "display notification \"${outfile##*/} (${secs:-?} s)\" with title \"Opptak lagret\""
 </string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
@@ -493,9 +494,14 @@ osascript -e "display notification \"${outfile##*/}\" with title \"Opptak lagret
 				<string>readonly lang="no"
 readonly model="${HOME}/.whisper-models/ggml-nb-whisper-large.bin"
 readonly workdir="${alfred_workflow_data}"
-readonly label="com.simonetnan.transcribe-nb"
-readonly script_file="${workdir}/transcribe_nb.sh"
+readonly script_file="${workdir}/transcribe_no.sh"
+readonly pid_file="${workdir}/transcribe.pid"
 mkdir -p "${workdir}"
+
+if [[ -f "${pid_file}" ]] &amp;&amp; kill -0 "$(&lt; "${pid_file}")" 2&gt;/dev/null; then
+  osascript -e 'display notification "En transkribering kjører allerede" with title "Transkribering"'
+  exit 0
+fi
 
 readonly src="$(find "${HOME}/Downloads" -maxdepth 1 -type f \( -iname '*.wav' -o -iname '*.m4a' -o -iname '*.mp3' -o -iname '*.aac' \) -exec stat -f '%m %N' {} \; | sort -rn | head -1 | cut -d' ' -f2-)"
 
@@ -515,13 +521,20 @@ outbase="${HOME}/Downloads/\${base}"
 
 /opt/homebrew/bin/ffmpeg -y -i "\${src}" -ar 16000 -ac 1 "\${wav16}"
 /opt/homebrew/bin/whisper-cli -m "\${model}" -f "\${wav16}" -l "\${lang}" -otxt -of "\${outbase}"
-rm -f "\${wav16}"
-osascript -e "display notification \"\${base}.txt\" with title \"Transkribering ferdig (\${lang})\""
+status=\$?
+rm -f "\${wav16}" "${pid_file}"
+if [[ \$status -eq 0 ]]; then
+  osascript -e "display notification \"\${base}.txt\" with title \"Transkribering ferdig (\${lang})\""
+else
+  osascript -e "display notification \"whisper feilet (kode \$status), se transcribe.log\" with title \"Transkribering\""
+fi
 SCRIPT
 chmod +x "${script_file}"
 
-launchctl remove "${label}" 2&gt;/dev/null
-launchctl submit -l "${label}" -o "${workdir}/transcribe.log" -e "${workdir}/transcribe.log" -- /bin/zsh "${script_file}"
+# Kjøres direkte i bakgrunnen (ikke launchctl submit – launchd restartet jobben i loop).
+nohup /bin/zsh "${script_file}" &gt;&gt; "${workdir}/transcribe.log" 2&gt;&amp;1 &lt; /dev/null &amp;
+echo $! &gt; "${pid_file}"
+disown
 
 osascript -e "display notification \"$(basename "${src}")\" with title \"Transkribering startet (no)\""
 </string>
@@ -573,9 +586,14 @@ osascript -e "display notification \"$(basename "${src}")\" with title \"Transkr
 				<string>readonly lang="en"
 readonly model="${HOME}/.whisper-models/ggml-nb-whisper-large.bin"
 readonly workdir="${alfred_workflow_data}"
-readonly label="com.simonetnan.transcribe-en"
 readonly script_file="${workdir}/transcribe_en.sh"
+readonly pid_file="${workdir}/transcribe.pid"
 mkdir -p "${workdir}"
+
+if [[ -f "${pid_file}" ]] &amp;&amp; kill -0 "$(&lt; "${pid_file}")" 2&gt;/dev/null; then
+  osascript -e 'display notification "En transkribering kjører allerede" with title "Transkribering"'
+  exit 0
+fi
 
 readonly src="$(find "${HOME}/Downloads" -maxdepth 1 -type f \( -iname '*.wav' -o -iname '*.m4a' -o -iname '*.mp3' -o -iname '*.aac' \) -exec stat -f '%m %N' {} \; | sort -rn | head -1 | cut -d' ' -f2-)"
 
@@ -595,13 +613,20 @@ outbase="${HOME}/Downloads/\${base}"
 
 /opt/homebrew/bin/ffmpeg -y -i "\${src}" -ar 16000 -ac 1 "\${wav16}"
 /opt/homebrew/bin/whisper-cli -m "\${model}" -f "\${wav16}" -l "\${lang}" -otxt -of "\${outbase}"
-rm -f "\${wav16}"
-osascript -e "display notification \"\${base}.txt\" with title \"Transkribering ferdig (\${lang})\""
+status=\$?
+rm -f "\${wav16}" "${pid_file}"
+if [[ \$status -eq 0 ]]; then
+  osascript -e "display notification \"\${base}.txt\" with title \"Transkribering ferdig (\${lang})\""
+else
+  osascript -e "display notification \"whisper feilet (kode \$status), se transcribe.log\" with title \"Transkribering\""
+fi
 SCRIPT
 chmod +x "${script_file}"
 
-launchctl remove "${label}" 2&gt;/dev/null
-launchctl submit -l "${label}" -o "${workdir}/transcribe.log" -e "${workdir}/transcribe.log" -- /bin/zsh "${script_file}"
+# Kjøres direkte i bakgrunnen (ikke launchctl submit – launchd restartet jobben i loop).
+nohup /bin/zsh "${script_file}" &gt;&gt; "${workdir}/transcribe.log" 2&gt;&amp;1 &lt; /dev/null &amp;
+echo $! &gt; "${pid_file}"
+disown
 
 osascript -e "display notification \"$(basename "${src}")\" with title \"Transkribering startet (en)\""
 </string>
