@@ -15,6 +15,28 @@
 			<key>url</key>
 			<string>https://hexdocs.pm/{query}</string>
 		</dict>
+		<key>34013C28-53DE-4776-B7E7-D2B6917BCAE0</key>
+		<dict>
+			<key>enabled</key>
+			<true/>
+			<key>keyword</key>
+			<string>finn</string>
+			<key>text</key>
+			<string>Søk på Finn.no etter '{query}'</string>
+			<key>url</key>
+			<string>https://www.finn.no/recommerce/forsale/search?q={query}</string>
+		</dict>
+		<key>5D8E1F42-9A3B-4C7D-8E2F-1B6A3C9D0E55</key>
+		<dict>
+			<key>enabled</key>
+			<true/>
+			<key>keyword</key>
+			<string>fl</string>
+			<key>text</key>
+			<string>Finn.no lokalt (Sandefjord/Tønsberg) etter '{query}'</string>
+			<key>url</key>
+			<string>https://www.finn.no/recommerce/forsale/search?location=1.20008.20134&amp;location=1.20008.20133&amp;q={query}</string>
+		</dict>
 		<key>90A90A47-37A8-483A-9384-3B40BAA3AAFF</key>
 		<dict>
 			<key>enabled</key>
