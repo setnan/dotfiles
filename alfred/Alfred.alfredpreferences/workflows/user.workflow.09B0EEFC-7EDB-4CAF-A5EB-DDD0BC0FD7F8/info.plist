@@ -6,6 +6,75 @@
 	<string>no.simonetnan.audioswitch</string>
 	<key>connections</key>
 	<dict>
+		<key>1A2B3C4D-0001-4A00-8000-A1B2C3D4E5F1</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>1A2B3C4D-0002-4A00-8000-A1B2C3D4E5F2</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>1A2B3C4D-0002-4A00-8000-A1B2C3D4E5F2</key>
+		<array/>
+		<key>1A2B3C4D-0003-4A00-8000-A1B2C3D4E5F3</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>1A2B3C4D-0004-4A00-8000-A1B2C3D4E5F4</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>1A2B3C4D-0004-4A00-8000-A1B2C3D4E5F4</key>
+		<array/>
+		<key>2B3C4D5E-0001-4B00-8000-B1C2D3E4F5A1</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>F40E45AD-FDA0-4E98-82D0-9A1204981FBE</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>2B3C4D5E-0002-4B00-8000-B1C2D3E4F5A2</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>7733050A-4F79-4AA4-81CD-68E914A938EC</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>2B3C4D5E-0003-4B00-8000-B1C2D3E4F5A3</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>C2AFF64B-A276-4E71-9253-7DE46EF5D7C2</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
 		<key>4AE3DAE6-6356-4A81-A73A-84F84D45E3AC</key>
 		<array>
 			<dict>
@@ -337,7 +406,7 @@
 				<integer>102</integer>
 				<key>script</key>
 				<string>readonly pid_file="${alfred_workflow_data}/recording.pid"
-readonly log_file="${alfred_workflow_data}/ffmpeg.log"
+readonly log_file="${alfred_workflow_data}/recording.log"
 mkdir -p "${alfred_workflow_data}"
 
 if [[ -f "${pid_file}" ]] &amp;&amp; kill -0 "$(&lt; "${pid_file}")" 2&gt;/dev/null; then
@@ -346,7 +415,14 @@ if [[ -f "${pid_file}" ]] &amp;&amp; kill -0 "$(&lt; "${pid_file}")" 2&gt;/dev/n
 fi
 rm -f "${pid_file}"
 
-if /opt/homebrew/bin/SwitchAudioSource -a -t output | grep -qx "BQCE"; then
+# Husk hva som var aktiv utgang, så stopp kan sette den tilbake.
+/opt/homebrew/bin/SwitchAudioSource -c &gt; "${alfred_workflow_data}/previous_output.txt"
+
+# Velg kombo etter hva som er koblet til: jack &gt; Bluetooth (BQCE) &gt; høyttalere.
+readonly outputs="$(/opt/homebrew/bin/SwitchAudioSource -a -t output)"
+if grep -qx "Eksterne hodetelefoner" &lt;&lt;&lt; "${outputs}"; then
+  /opt/homebrew/bin/SwitchAudioSource -s "Jack+BlackHole"
+elif grep -qx "BQCE" &lt;&lt;&lt; "${outputs}"; then
   /opt/homebrew/bin/SwitchAudioSource -s "Hodetelefoner+BlackHole"
 else
   /opt/homebrew/bin/SwitchAudioSource -s "MacBook+BlackHole"
@@ -354,15 +430,42 @@ fi
 
 sleep 0.5
 
-readonly device_index="$(/opt/homebrew/bin/ffmpeg -f avfoundation -list_devices true -i "" 2&gt;&amp;1 | grep "BlackHole 2ch" | grep -oE '\[[0-9]+\]' | head -1 | tr -d '[]')"
 readonly outfile="${HOME}/Downloads/$(date +%Y%m%d-%H%M%S).wav"
 
-# Kjøres direkte i bakgrunnen (ikke launchctl submit – launchd restarter slike jobber
-# når de avsluttes, og overskrev opptaket ved stopp 2026-09-23). -n = nekt å overskrive.
-nohup /opt/homebrew/bin/ffmpeg -nostdin -hide_banner -f avfoundation -i ":${device_index}" -ar 44100 -n "${outfile}" &gt;&gt; "${log_file}" 2&gt;&amp;1 &lt; /dev/null &amp;
-readonly pid=$!
-disown
-
+# Opptak med sox (CoreAudio direkte). ffmpeg/avfoundation holder bare én lydbuffer i kø og
+# mister samples så snart den ikke rekker å lese (12 % i ro, 74 % under whisper-last
+# 2026-09-23) – opptaket ble kortere enn sanntid og hørtes "for kjapt" ut. sox har ringbuffer.
+# Kjøres som en engangsjobb i launchd (KeepAlive=false): da er launchd "ansvarlig prosess"
+# for TCC/mikrofon (som barn av Alfred blir opptakeren drept av TCC), og ingenting restarter
+# jobben når den avslutter – i motsetning til `launchctl submit`, som overskrev opptaket
+# 2026-09-23.
+readonly label="com.simonetnan.blackhole-recording"
+readonly job_plist="${alfred_workflow_data}/${label}.plist"
+launchctl bootout "gui/$(id -u)/${label}" 2&gt;/dev/null
+cat &gt; "${job_plist}" &lt;&lt;PLIST
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"&gt;
+&lt;plist version="1.0"&gt;&lt;dict&gt;
+  &lt;key&gt;Label&lt;/key&gt;&lt;string&gt;${label}&lt;/string&gt;
+  &lt;key&gt;ProgramArguments&lt;/key&gt;&lt;array&gt;
+    &lt;string&gt;/opt/homebrew/bin/sox&lt;/string&gt;&lt;string&gt;-q&lt;/string&gt;
+    &lt;string&gt;-t&lt;/string&gt;&lt;string&gt;coreaudio&lt;/string&gt;&lt;string&gt;BlackHole 2ch&lt;/string&gt;
+    &lt;string&gt;-r&lt;/string&gt;&lt;string&gt;44100&lt;/string&gt;&lt;string&gt;-b&lt;/string&gt;&lt;string&gt;16&lt;/string&gt;&lt;string&gt;-c&lt;/string&gt;&lt;string&gt;2&lt;/string&gt;
+    &lt;string&gt;${outfile}&lt;/string&gt;
+  &lt;/array&gt;
+  &lt;key&gt;RunAtLoad&lt;/key&gt;&lt;true/&gt;
+  &lt;key&gt;KeepAlive&lt;/key&gt;&lt;false/&gt;
+  &lt;key&gt;StandardOutPath&lt;/key&gt;&lt;string&gt;${log_file}&lt;/string&gt;
+  &lt;key&gt;StandardErrorPath&lt;/key&gt;&lt;string&gt;${log_file}&lt;/string&gt;
+&lt;/dict&gt;&lt;/plist&gt;
+PLIST
+launchctl bootstrap "gui/$(id -u)" "${job_plist}"
+sleep 1
+readonly pid="$(launchctl print "gui/$(id -u)/${label}" 2&gt;/dev/null | grep -m1 -E '^\s*pid = ' | grep -oE '[0-9]+')"
+if [[ -z "${pid}" ]]; then
+  osascript -e 'display notification "Klarte ikke starte sox – se recording.log" with title "BlackHole"'
+  exit 1
+fi
 echo "${pid}" &gt; "${pid_file}"
 echo "${outfile}" &gt; "${alfred_workflow_data}/last_recording.txt"
 
@@ -415,15 +518,31 @@ osascript -e "display notification \"${outfile##*/}\" with title \"Opptak starte
 				<key>script</key>
 				<string>readonly pid_file="${alfred_workflow_data}/recording.pid"
 
+restore_output() {
+  local outputs previous
+  outputs="$(/opt/homebrew/bin/SwitchAudioSource -a -t output)"
+  previous="$(&lt; "${alfred_workflow_data}/previous_output.txt" 2&gt;/dev/null)"
+  if [[ -n "${previous}" ]] &amp;&amp; grep -qxF "${previous}" &lt;&lt;&lt; "${outputs}"; then
+    /opt/homebrew/bin/SwitchAudioSource -s "${previous}"
+  elif grep -qx "Eksterne hodetelefoner" &lt;&lt;&lt; "${outputs}"; then
+    /opt/homebrew/bin/SwitchAudioSource -s "Eksterne hodetelefoner"
+  elif grep -qx "BQCE" &lt;&lt;&lt; "${outputs}"; then
+    /opt/homebrew/bin/SwitchAudioSource -s "BQCE"
+  else
+    /opt/homebrew/bin/SwitchAudioSource -s "MacBook Pro-høyttalere"
+  fi
+}
+
 if [[ ! -f "${pid_file}" ]] || ! kill -0 "$(&lt; "${pid_file}")" 2&gt;/dev/null; then
   rm -f "${pid_file}"
-  osascript -e 'display notification "Ingen aktivt opptak" with title "BlackHole"'
+  restore_output
+  osascript -e 'display notification "Ingen aktivt opptak – lydutgang satt tilbake" with title "BlackHole"'
   exit 0
 fi
 
 readonly pid="$(&lt; "${pid_file}")"
 
-# Ctrl-C lar ffmpeg skrive ferdig WAV-headeren. Vent til prosessen er borte.
+# Ctrl-C lar sox skrive ferdig WAV-headeren. Vent til prosessen er borte.
 kill -INT "${pid}"
 for i in {1..50}; do
   kill -0 "${pid}" 2&gt;/dev/null || break
@@ -435,12 +554,9 @@ if kill -0 "${pid}" 2&gt;/dev/null; then
 fi
 
 rm -f "${pid_file}"
+launchctl bootout "gui/$(id -u)/com.simonetnan.blackhole-recording" 2&gt;/dev/null
 
-if /opt/homebrew/bin/SwitchAudioSource -a -t output | grep -qx "BQCE"; then
-  /opt/homebrew/bin/SwitchAudioSource -s "BQCE"
-else
-  /opt/homebrew/bin/SwitchAudioSource -s "MacBook Pro-høyttalere"
-fi
+restore_output
 
 readonly outfile="$(&lt; "${alfred_workflow_data}/last_recording.txt" 2&gt;/dev/null)"
 readonly secs="$(/opt/homebrew/bin/ffprobe -v error -show_entries format=duration -of csv=p=0 "${outfile}" 2&gt;/dev/null | cut -d. -f1)"
@@ -521,20 +637,36 @@ outbase="${HOME}/Downloads/\${base}"
 
 /opt/homebrew/bin/ffmpeg -y -i "\${src}" -ar 16000 -ac 1 "\${wav16}"
 /opt/homebrew/bin/whisper-cli -m "\${model}" -f "\${wav16}" -l "\${lang}" -otxt -of "\${outbase}"
-status=\$?
+rc=\$?
 rm -f "\${wav16}" "${pid_file}"
-if [[ \$status -eq 0 ]]; then
+if [[ \$rc -eq 0 ]]; then
   osascript -e "display notification \"\${base}.txt\" with title \"Transkribering ferdig (\${lang})\""
 else
-  osascript -e "display notification \"whisper feilet (kode \$status), se transcribe.log\" with title \"Transkribering\""
+  osascript -e "display notification \"whisper feilet (kode \$rc), se transcribe.log\" with title \"Transkribering\""
 fi
 SCRIPT
 chmod +x "${script_file}"
 
 # Kjøres direkte i bakgrunnen (ikke launchctl submit – launchd restartet jobben i loop).
-nohup /bin/zsh "${script_file}" &gt;&gt; "${workdir}/transcribe.log" 2&gt;&amp;1 &lt; /dev/null &amp;
-echo $! &gt; "${pid_file}"
-disown
+# Engangsjobb i launchd (KeepAlive=false) – ikke `launchctl submit`, som restartet i loop.
+readonly label="com.simonetnan.transcribe-no"
+readonly job_plist="${workdir}/${label}.plist"
+launchctl bootout "gui/$(id -u)/${label}" 2&gt;/dev/null
+cat &gt; "${job_plist}" &lt;&lt;PLIST
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"&gt;
+&lt;plist version="1.0"&gt;&lt;dict&gt;
+  &lt;key&gt;Label&lt;/key&gt;&lt;string&gt;${label}&lt;/string&gt;
+  &lt;key&gt;ProgramArguments&lt;/key&gt;&lt;array&gt;&lt;string&gt;/bin/zsh&lt;/string&gt;&lt;string&gt;${script_file}&lt;/string&gt;&lt;/array&gt;
+  &lt;key&gt;RunAtLoad&lt;/key&gt;&lt;true/&gt;
+  &lt;key&gt;KeepAlive&lt;/key&gt;&lt;false/&gt;
+  &lt;key&gt;StandardOutPath&lt;/key&gt;&lt;string&gt;${workdir}/transcribe.log&lt;/string&gt;
+  &lt;key&gt;StandardErrorPath&lt;/key&gt;&lt;string&gt;${workdir}/transcribe.log&lt;/string&gt;
+&lt;/dict&gt;&lt;/plist&gt;
+PLIST
+launchctl bootstrap "gui/$(id -u)" "${job_plist}"
+sleep 0.5
+launchctl print "gui/$(id -u)/${label}" 2&gt;/dev/null | grep -m1 -E '^\s*pid = ' | grep -oE '[0-9]+' &gt; "${pid_file}"
 
 osascript -e "display notification \"$(basename "${src}")\" with title \"Transkribering startet (no)\""
 </string>
@@ -613,20 +745,36 @@ outbase="${HOME}/Downloads/\${base}"
 
 /opt/homebrew/bin/ffmpeg -y -i "\${src}" -ar 16000 -ac 1 "\${wav16}"
 /opt/homebrew/bin/whisper-cli -m "\${model}" -f "\${wav16}" -l "\${lang}" -otxt -of "\${outbase}"
-status=\$?
+rc=\$?
 rm -f "\${wav16}" "${pid_file}"
-if [[ \$status -eq 0 ]]; then
+if [[ \$rc -eq 0 ]]; then
   osascript -e "display notification \"\${base}.txt\" with title \"Transkribering ferdig (\${lang})\""
 else
-  osascript -e "display notification \"whisper feilet (kode \$status), se transcribe.log\" with title \"Transkribering\""
+  osascript -e "display notification \"whisper feilet (kode \$rc), se transcribe.log\" with title \"Transkribering\""
 fi
 SCRIPT
 chmod +x "${script_file}"
 
 # Kjøres direkte i bakgrunnen (ikke launchctl submit – launchd restartet jobben i loop).
-nohup /bin/zsh "${script_file}" &gt;&gt; "${workdir}/transcribe.log" 2&gt;&amp;1 &lt; /dev/null &amp;
-echo $! &gt; "${pid_file}"
-disown
+# Engangsjobb i launchd (KeepAlive=false) – ikke `launchctl submit`, som restartet i loop.
+readonly label="com.simonetnan.transcribe-en"
+readonly job_plist="${workdir}/${label}.plist"
+launchctl bootout "gui/$(id -u)/${label}" 2&gt;/dev/null
+cat &gt; "${job_plist}" &lt;&lt;PLIST
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"&gt;
+&lt;plist version="1.0"&gt;&lt;dict&gt;
+  &lt;key&gt;Label&lt;/key&gt;&lt;string&gt;${label}&lt;/string&gt;
+  &lt;key&gt;ProgramArguments&lt;/key&gt;&lt;array&gt;&lt;string&gt;/bin/zsh&lt;/string&gt;&lt;string&gt;${script_file}&lt;/string&gt;&lt;/array&gt;
+  &lt;key&gt;RunAtLoad&lt;/key&gt;&lt;true/&gt;
+  &lt;key&gt;KeepAlive&lt;/key&gt;&lt;false/&gt;
+  &lt;key&gt;StandardOutPath&lt;/key&gt;&lt;string&gt;${workdir}/transcribe.log&lt;/string&gt;
+  &lt;key&gt;StandardErrorPath&lt;/key&gt;&lt;string&gt;${workdir}/transcribe.log&lt;/string&gt;
+&lt;/dict&gt;&lt;/plist&gt;
+PLIST
+launchctl bootstrap "gui/$(id -u)" "${job_plist}"
+sleep 0.5
+launchctl print "gui/$(id -u)/${label}" 2&gt;/dev/null | grep -m1 -E '^\s*pid = ' | grep -oE '[0-9]+' &gt; "${pid_file}"
 
 osascript -e "display notification \"$(basename "${src}")\" with title \"Transkribering startet (en)\""
 </string>
@@ -644,11 +792,191 @@ osascript -e "display notification \"$(basename "${src}")\" with title \"Transkr
 			<key>version</key>
 			<integer>2</integer>
 		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argumenttype</key>
+				<integer>2</integer>
+				<key>keyword</key>
+				<string>jack</string>
+				<key>skipuniversalaction</key>
+				<true/>
+				<key>subtext</key>
+				<string>Bytt systemutgang til kablede hodetelefoner (jack) + BlackHole 2ch</string>
+				<key>text</key>
+				<string>Lyd: Jack-hodetelefoner + BlackHole</string>
+				<key>withspace</key>
+				<false/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.keyword</string>
+			<key>uid</key>
+			<string>1A2B3C4D-0001-4A00-8000-A1B2C3D4E5F1</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>script</key>
+				<string>/opt/homebrew/bin/SwitchAudioSource -s "Jack+BlackHole"</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>type</key>
+				<integer>11</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>1A2B3C4D-0002-4A00-8000-A1B2C3D4E5F2</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argumenttype</key>
+				<integer>2</integer>
+				<key>keyword</key>
+				<string>kunjack</string>
+				<key>skipuniversalaction</key>
+				<true/>
+				<key>subtext</key>
+				<string>Bytt systemutgang til kablede hodetelefoner (uten BlackHole, normal volumkontroll)</string>
+				<key>text</key>
+				<string>Lyd: Kun jack-hodetelefoner</string>
+				<key>withspace</key>
+				<false/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.keyword</string>
+			<key>uid</key>
+			<string>1A2B3C4D-0003-4A00-8000-A1B2C3D4E5F3</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>script</key>
+				<string>/opt/homebrew/bin/SwitchAudioSource -s "Eksterne hodetelefoner"</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>type</key>
+				<integer>11</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>1A2B3C4D-0004-4A00-8000-A1B2C3D4E5F4</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>triggerid</key>
+				<string>record-start</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.trigger.external</string>
+			<key>uid</key>
+			<string>2B3C4D5E-0001-4B00-8000-B1C2D3E4F5A1</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>triggerid</key>
+				<string>record-stop</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.trigger.external</string>
+			<key>uid</key>
+			<string>2B3C4D5E-0002-4B00-8000-B1C2D3E4F5A2</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>triggerid</key>
+				<string>transcribe-nb</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.trigger.external</string>
+			<key>uid</key>
+			<string>2B3C4D5E-0003-4B00-8000-B1C2D3E4F5A3</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
 	</array>
 	<key>readme</key>
 	<string>Krever switchaudio-osx (brew install switchaudio-osx) og to Multi-Output-enheter satt opp i Audio MIDI Setup: 'Hodetelefoner+BlackHole' og 'MacBook+BlackHole', begge med BlackHole 2ch inkludert.</string>
 	<key>uidata</key>
 	<dict>
+		<key>1A2B3C4D-0001-4A00-8000-A1B2C3D4E5F1</key>
+		<dict>
+			<key>xpos</key>
+			<real>200.0</real>
+			<key>ypos</key>
+			<real>1400.0</real>
+		</dict>
+		<key>1A2B3C4D-0002-4A00-8000-A1B2C3D4E5F2</key>
+		<dict>
+			<key>xpos</key>
+			<real>450.0</real>
+			<key>ypos</key>
+			<real>1400.0</real>
+		</dict>
+		<key>1A2B3C4D-0003-4A00-8000-A1B2C3D4E5F3</key>
+		<dict>
+			<key>xpos</key>
+			<real>200.0</real>
+			<key>ypos</key>
+			<real>1550.0</real>
+		</dict>
+		<key>1A2B3C4D-0004-4A00-8000-A1B2C3D4E5F4</key>
+		<dict>
+			<key>xpos</key>
+			<real>450.0</real>
+			<key>ypos</key>
+			<real>1550.0</real>
+		</dict>
+		<key>2B3C4D5E-0001-4B00-8000-B1C2D3E4F5A1</key>
+		<dict>
+			<key>xpos</key>
+			<real>30.0</real>
+			<key>ypos</key>
+			<real>800.0</real>
+		</dict>
+		<key>2B3C4D5E-0002-4B00-8000-B1C2D3E4F5A2</key>
+		<dict>
+			<key>xpos</key>
+			<real>30.0</real>
+			<key>ypos</key>
+			<real>950.0</real>
+		</dict>
+		<key>2B3C4D5E-0003-4B00-8000-B1C2D3E4F5A3</key>
+		<dict>
+			<key>xpos</key>
+			<real>30.0</real>
+			<key>ypos</key>
+			<real>1100.0</real>
+		</dict>
 		<key>4AE3DAE6-6356-4A81-A73A-84F84D45E3AC</key>
 		<dict>
 			<key>xpos</key>
