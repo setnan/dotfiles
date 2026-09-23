@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>bundleid</key>
+	<string>no.etnan.kill</string>
+	<key>category</key>
+	<string>Tools</string>
+	<key>connections</key>
+	<dict>
+		<key>A1F0C6D2-3B4E-4F5A-8C9D-0E1F2A3B4C01</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>A1F0C6D2-3B4E-4F5A-8C9D-0E1F2A3B4C02</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+			<dict>
+				<key>destinationuid</key>
+				<string>A1F0C6D2-3B4E-4F5A-8C9D-0E1F2A3B4C03</string>
+				<key>modifiers</key>
+				<integer>1048576</integer>
+				<key>modifiersubtext</key>
+				<string>Tvangsavslutt (kill -9)</string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+			<dict>
+				<key>destinationuid</key>
+				<string>A1F0C6D2-3B4E-4F5A-8C9D-0E1F2A3B4C04</string>
+				<key>modifiers</key>
+				<integer>524288</integer>
+				<key>modifiersubtext</key>
+				<string>Avslutt alle prosesser i appen</string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>A1F0C6D2-3B4E-4F5A-8C9D-0E1F2A3B4C02</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>A1F0C6D2-3B4E-4F5A-8C9D-0E1F2A3B4C05</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>A1F0C6D2-3B4E-4F5A-8C9D-0E1F2A3B4C03</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>A1F0C6D2-3B4E-4F5A-8C9D-0E1F2A3B4C05</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>A1F0C6D2-3B4E-4F5A-8C9D-0E1F2A3B4C04</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>A1F0C6D2-3B4E-4F5A-8C9D-0E1F2A3B4C05</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>A1F0C6D2-3B4E-4F5A-8C9D-0E1F2A3B4C05</key>
+		<array/>
+	</dict>
+	<key>createdby</key>
+	<string>Simon Etnan</string>
+	<key>description</key>
+	<string>Vis kjørende prosesser (hengende først) og avslutt dem</string>
+	<key>disabled</key>
+	<false/>
+	<key>name</key>
+	<string>Kill</string>
+	<key>objects</key>
+	<array>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>alfredfiltersresults</key>
+				<false/>
+				<key>alfredfiltersresultsmatchmode</key>
+				<integer>0</integer>
+				<key>argumenttreatemptyqueryasnil</key>
+				<true/>
+				<key>argumenttrimmode</key>
+				<integer>0</integer>
+				<key>argumenttype</key>
+				<integer>1</integer>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>keyword</key>
+				<string>kill</string>
+				<key>queuedelaycustom</key>
+				<integer>3</integer>
+				<key>queuedelayimmediatelyinitially</key>
+				<true/>
+				<key>queuedelaymode</key>
+				<integer>0</integer>
+				<key>queuemode</key>
+				<integer>1</integer>
+				<key>runningsubtext</key>
+				<string>Henter prosesser …</string>
+				<key>script</key>
+				<string>/usr/bin/python3 kill_list.py "$1"</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>skipuniversalaction</key>
+				<true/>
+				<key>subtext</key>
+				<string>Kjørende prosesser – hengende apper øverst. Enter avslutter, Cmd tvinger, Alt tar hele appen</string>
+				<key>title</key>
+				<string>Kill prosess</string>
+				<key>type</key>
+				<integer>11</integer>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.scriptfilter</string>
+			<key>uid</key>
+			<string>A1F0C6D2-3B4E-4F5A-8C9D-0E1F2A3B4C01</string>
+			<key>version</key>
+			<integer>3</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>script</key>
+				<string>/usr/bin/python3 kill_proc.py term</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>type</key>
+				<integer>11</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>A1F0C6D2-3B4E-4F5A-8C9D-0E1F2A3B4C02</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>script</key>
+				<string>/usr/bin/python3 kill_proc.py kill</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>type</key>
+				<integer>11</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>A1F0C6D2-3B4E-4F5A-8C9D-0E1F2A3B4C03</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>script</key>
+				<string>/usr/bin/python3 kill_proc.py group</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>type</key>
+				<integer>11</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>A1F0C6D2-3B4E-4F5A-8C9D-0E1F2A3B4C04</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>lastpathcomponent</key>
+				<false/>
+				<key>onlyshowifquerypopulated</key>
+				<true/>
+				<key>removeextension</key>
+				<false/>
+				<key>text</key>
+				<string>{query}</string>
+				<key>title</key>
+				<string>Kill</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.output.notification</string>
+			<key>uid</key>
+			<string>A1F0C6D2-3B4E-4F5A-8C9D-0E1F2A3B4C05</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+	</array>
+	<key>readme</key>
+	<string>Vis og avslutt kjørende prosesser. Apper som henger (svarer ikke, er stoppet eller zombie) ligger øverst, deretter vanlige apper sortert etter CPU, så øvrige prosesser.
+
+Keyword: kill [søk]
+
+- Enter: avslutt pent (SIGTERM)
+- Cmd+Enter: tvangsavslutt (SIGKILL / kill -9)
+- Alt+Enter: avslutt alle prosesser som tilhører samme app (nyttig for Chrome/Electron-hjelpere)
+- Cmd+C kopierer PID, Cmd+L viser navn, PID og full sti
+
+Søket matcher prosessnavn, appnavn, PID, sti og bruker. Ingen søk viser alle prosesser (maks 150).
+
+Hengende apper oppdages via Accessibility-API: en app som ikke svarer på en tilgjengelighetsforespørsel innen 0,4 s markeres «svarer ikke». Dette krever at Alfred har tilgang under Systeminnstillinger → Personvern og sikkerhet → Tilgjengelighet; mangler tilgangen vises en rad nederst som åpner innstillingen.
+
+Prosesser eid av andre brukere (root osv.) kan ikke avsluttes herfra – bruk sudo kill i terminalen.</string>
+	<key>uidata</key>
+	<dict>
+		<key>A1F0C6D2-3B4E-4F5A-8C9D-0E1F2A3B4C01</key>
+		<dict>
+			<key>xpos</key>
+			<integer>30</integer>
+			<key>ypos</key>
+			<integer>180</integer>
+		</dict>
+		<key>A1F0C6D2-3B4E-4F5A-8C9D-0E1F2A3B4C02</key>
+		<dict>
+			<key>xpos</key>
+			<integer>290</integer>
+			<key>ypos</key>
+			<integer>30</integer>
+		</dict>
+		<key>A1F0C6D2-3B4E-4F5A-8C9D-0E1F2A3B4C03</key>
+		<dict>
+			<key>xpos</key>
+			<integer>290</integer>
+			<key>ypos</key>
+			<integer>180</integer>
+		</dict>
+		<key>A1F0C6D2-3B4E-4F5A-8C9D-0E1F2A3B4C04</key>
+		<dict>
+			<key>xpos</key>
+			<integer>290</integer>
+			<key>ypos</key>
+			<integer>330</integer>
+		</dict>
+		<key>A1F0C6D2-3B4E-4F5A-8C9D-0E1F2A3B4C05</key>
+		<dict>
+			<key>xpos</key>
+			<integer>550</integer>
+			<key>ypos</key>
+			<integer>180</integer>
+		</dict>
+	</dict>
+	<key>userconfigurationconfig</key>
+	<array/>
+	<key>variablesdontexport</key>
+	<array/>
+	<key>version</key>
+	<string>1.0</string>
+	<key>webaddress</key>
+	<string></string>
+</dict>
+</plist>
