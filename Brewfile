@@ -29,3 +29,10 @@ brew "exiftool"
 # Third-party tap: run `brew trust stripe/stripe-cli` once before `brew bundle`
 tap "stripe/stripe-cli"
 brew "stripe/stripe-cli/stripe"
+
+# Lyd (BlackHole-opptak + transkribering via Alfred-workflowen "Bytt lydutgang")
+cask "blackhole-2ch"    # virtuell lydenhet for opptak av systemlyd
+brew "switchaudio-osx"  # SwitchAudioSource – bytter lydutgang
+brew "sox"              # opptaker (CoreAudio direkte; ffmpeg/avfoundation mister samples)
+brew "ffmpeg"           # 16 kHz-konvertering før whisper
+brew "whisper.cpp"      # whisper-cli, modeller i ~/.whisper-models
