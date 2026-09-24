@@ -384,7 +384,7 @@
 				<key>skipuniversalaction</key>
 				<true/>
 				<key>subtext</key>
-				<string>Tar opp systemlyd fra BlackHole 2ch til ~/Downloads</string>
+				<string>Tar opp systemlyd (BlackHole 2ch) og mikrofon, mikset til én WAV i ~/Downloads</string>
 				<key>text</key>
 				<string>Start opptak (BlackHole)</string>
 				<key>withspace</key>
@@ -406,14 +406,15 @@
 				<integer>102</integer>
 				<key>script</key>
 				<string>readonly pid_file="${alfred_workflow_data}/recording.pid"
-readonly log_file="${alfred_workflow_data}/recording.log"
-mkdir -p "${alfred_workflow_data}"
+readonly mic_pid_file="${alfred_workflow_data}/mic.pid"
+readonly parts_dir="${alfred_workflow_data}/parts"
+mkdir -p "${parts_dir}"
 
 if [[ -f "${pid_file}" ]] &amp;&amp; kill -0 "$(&lt; "${pid_file}")" 2&gt;/dev/null; then
   osascript -e 'display notification "Opptak pågår allerede" with title "BlackHole"'
   exit 0
 fi
-rm -f "${pid_file}"
+rm -f "${pid_file}" "${mic_pid_file}"
 
 # Husk hva som var aktiv utgang, så stopp kan sette den tilbake.
 /opt/homebrew/bin/SwitchAudioSource -c &gt; "${alfred_workflow_data}/previous_output.txt"
@@ -430,28 +431,36 @@ fi
 
 sleep 0.5
 
-readonly outfile="${HOME}/Downloads/$(date +%Y%m%d-%H%M%S).wav"
+readonly stamp="$(date +%Y%m%d-%H%M%S)"
+readonly outfile="${HOME}/Downloads/${stamp}.wav"
 
+# To sox-prosesser: én på BlackHole 2ch (systemlyd = den andre parten) og én på "default"
+# (systemets standard mikrofon = deg, uansett om det er MacBook-mik eller headset). BlackHole
+# får bare det som spilles av, så uten mikrofonsporet mangler din egen stemme (2026-09-24).
+# Delfilene ligger i parts/ og mikses til én WAV i ~/Downloads når opptaket stoppes.
+#
 # Opptak med sox (CoreAudio direkte). ffmpeg/avfoundation holder bare én lydbuffer i kø og
 # mister samples så snart den ikke rekker å lese (12 % i ro, 74 % under whisper-last
 # 2026-09-23) – opptaket ble kortere enn sanntid og hørtes "for kjapt" ut. sox har ringbuffer.
-# Kjøres som en engangsjobb i launchd (KeepAlive=false): da er launchd "ansvarlig prosess"
+# Kjøres som engangsjobber i launchd (KeepAlive=false): da er launchd "ansvarlig prosess"
 # for TCC/mikrofon (som barn av Alfred blir opptakeren drept av TCC), og ingenting restarter
 # jobben når den avslutter – i motsetning til `launchctl submit`, som overskrev opptaket
 # 2026-09-23.
-readonly label="com.simonetnan.blackhole-recording"
-readonly job_plist="${alfred_workflow_data}/${label}.plist"
-launchctl bootout "gui/$(id -u)/${label}" 2&gt;/dev/null
-cat &gt; "${job_plist}" &lt;&lt;PLIST
+start_job() {
+  local label="$1" device="$2" channels="$3" file="$4"
+  local job_plist="${alfred_workflow_data}/${label}.plist"
+  local log_file="${alfred_workflow_data}/${label#com.simonetnan.}.log"
+  launchctl bootout "gui/$(id -u)/${label}" 2&gt;/dev/null
+  cat &gt; "${job_plist}" &lt;&lt;PLIST
 &lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"&gt;
 &lt;plist version="1.0"&gt;&lt;dict&gt;
   &lt;key&gt;Label&lt;/key&gt;&lt;string&gt;${label}&lt;/string&gt;
   &lt;key&gt;ProgramArguments&lt;/key&gt;&lt;array&gt;
     &lt;string&gt;/opt/homebrew/bin/sox&lt;/string&gt;&lt;string&gt;-q&lt;/string&gt;
-    &lt;string&gt;-t&lt;/string&gt;&lt;string&gt;coreaudio&lt;/string&gt;&lt;string&gt;BlackHole 2ch&lt;/string&gt;
-    &lt;string&gt;-r&lt;/string&gt;&lt;string&gt;44100&lt;/string&gt;&lt;string&gt;-b&lt;/string&gt;&lt;string&gt;16&lt;/string&gt;&lt;string&gt;-c&lt;/string&gt;&lt;string&gt;2&lt;/string&gt;
-    &lt;string&gt;${outfile}&lt;/string&gt;
+    &lt;string&gt;-t&lt;/string&gt;&lt;string&gt;coreaudio&lt;/string&gt;&lt;string&gt;${device}&lt;/string&gt;
+    &lt;string&gt;-r&lt;/string&gt;&lt;string&gt;44100&lt;/string&gt;&lt;string&gt;-b&lt;/string&gt;&lt;string&gt;16&lt;/string&gt;&lt;string&gt;-c&lt;/string&gt;&lt;string&gt;${channels}&lt;/string&gt;
+    &lt;string&gt;${file}&lt;/string&gt;
   &lt;/array&gt;
   &lt;key&gt;RunAtLoad&lt;/key&gt;&lt;true/&gt;
   &lt;key&gt;KeepAlive&lt;/key&gt;&lt;false/&gt;
@@ -459,17 +468,34 @@ cat &gt; "${job_plist}" &lt;&lt;PLIST
   &lt;key&gt;StandardErrorPath&lt;/key&gt;&lt;string&gt;${log_file}&lt;/string&gt;
 &lt;/dict&gt;&lt;/plist&gt;
 PLIST
-launchctl bootstrap "gui/$(id -u)" "${job_plist}"
+  launchctl bootstrap "gui/$(id -u)" "${job_plist}"
+}
+
+job_pid() {
+  launchctl print "gui/$(id -u)/$1" 2&gt;/dev/null | grep -m1 -E '^\s*pid = ' | grep -oE '[0-9]+'
+}
+
+# Start begge før vi venter, så sporene starter så likt som mulig.
+start_job com.simonetnan.blackhole-recording "BlackHole 2ch" 2 "${parts_dir}/${stamp}-system.wav"
+start_job com.simonetnan.mic-recording default 1 "${parts_dir}/${stamp}-mic.wav"
 sleep 1
-readonly pid="$(launchctl print "gui/$(id -u)/${label}" 2&gt;/dev/null | grep -m1 -E '^\s*pid = ' | grep -oE '[0-9]+')"
-if [[ -z "${pid}" ]]; then
-  osascript -e 'display notification "Klarte ikke starte sox – se recording.log" with title "BlackHole"'
+
+readonly sys_pid="$(job_pid com.simonetnan.blackhole-recording)"
+readonly mic_pid="$(job_pid com.simonetnan.mic-recording)"
+if [[ -z "${sys_pid}" ]]; then
+  [[ -n "${mic_pid}" ]] &amp;&amp; kill -INT "${mic_pid}"
+  osascript -e 'display notification "Klarte ikke starte sox – se blackhole-recording.log" with title "BlackHole"'
   exit 1
 fi
-echo "${pid}" &gt; "${pid_file}"
+echo "${sys_pid}" &gt; "${pid_file}"
 echo "${outfile}" &gt; "${alfred_workflow_data}/last_recording.txt"
 
-osascript -e "display notification \"${outfile##*/}\" with title \"Opptak startet\""
+if [[ -n "${mic_pid}" ]]; then
+  echo "${mic_pid}" &gt; "${mic_pid_file}"
+  osascript -e "display notification \"${outfile##*/} (systemlyd + mikrofon)\" with title \"Opptak startet\""
+else
+  osascript -e "display notification \"${outfile##*/} – mikrofon startet ikke, se mic-recording.log\" with title \"Opptak startet (bare systemlyd)\""
+fi
 </string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
@@ -517,6 +543,9 @@ osascript -e "display notification \"${outfile##*/}\" with title \"Opptak starte
 				<integer>102</integer>
 				<key>script</key>
 				<string>readonly pid_file="${alfred_workflow_data}/recording.pid"
+readonly mic_pid_file="${alfred_workflow_data}/mic.pid"
+readonly parts_dir="${alfred_workflow_data}/parts"
+readonly mix_log="${alfred_workflow_data}/mix.log"
 
 restore_output() {
   local outputs previous
@@ -533,34 +562,62 @@ restore_output() {
   fi
 }
 
+# Vent til prosessen er borte; TERM som siste utvei.
+wait_gone() {
+  local pid="$1"
+  [[ -n "${pid}" ]] || return 0
+  for i in {1..50}; do
+    kill -0 "${pid}" 2&gt;/dev/null || return 0
+    sleep 0.2
+  done
+  kill -TERM "${pid}" 2&gt;/dev/null
+  sleep 1
+}
+
 if [[ ! -f "${pid_file}" ]] || ! kill -0 "$(&lt; "${pid_file}")" 2&gt;/dev/null; then
-  rm -f "${pid_file}"
+  rm -f "${pid_file}" "${mic_pid_file}"
   restore_output
   osascript -e 'display notification "Ingen aktivt opptak – lydutgang satt tilbake" with title "BlackHole"'
   exit 0
 fi
 
-readonly pid="$(&lt; "${pid_file}")"
+readonly sys_pid="$(&lt; "${pid_file}")"
+readonly mic_pid="$(&lt; "${mic_pid_file}" 2&gt;/dev/null)"
 
-# Ctrl-C lar sox skrive ferdig WAV-headeren. Vent til prosessen er borte.
-kill -INT "${pid}"
-for i in {1..50}; do
-  kill -0 "${pid}" 2&gt;/dev/null || break
-  sleep 0.2
-done
-if kill -0 "${pid}" 2&gt;/dev/null; then
-  kill -TERM "${pid}"
-  sleep 1
-fi
+# Ctrl-C lar sox skrive ferdig WAV-headeren. Send til begge først, vent etterpå.
+kill -INT "${sys_pid}" 2&gt;/dev/null
+[[ -n "${mic_pid}" ]] &amp;&amp; kill -INT "${mic_pid}" 2&gt;/dev/null
+wait_gone "${sys_pid}"
+wait_gone "${mic_pid}"
 
-rm -f "${pid_file}"
+rm -f "${pid_file}" "${mic_pid_file}"
 launchctl bootout "gui/$(id -u)/com.simonetnan.blackhole-recording" 2&gt;/dev/null
+launchctl bootout "gui/$(id -u)/com.simonetnan.mic-recording" 2&gt;/dev/null
 
 restore_output
 
 readonly outfile="$(&lt; "${alfred_workflow_data}/last_recording.txt" 2&gt;/dev/null)"
+readonly base="${outfile##*/}"
+readonly stamp="${base%.wav}"
+readonly sys_part="${parts_dir}/${stamp}-system.wav"
+readonly mic_part="${parts_dir}/${stamp}-mic.wav"
+
+# Miks systemlyd (stereo) og mikrofon (mono → dupliseres til begge kanaler) til én fil.
+# `-m` skalerer hver kilde med 1/n, `gain -n -1` normaliserer toppen til -1 dBFS etterpå.
+# Delfilene slettes bare når miksen lyktes; feiler den, flyttes systemsporet til Downloads.
+osascript -e "display notification \"${base}\" with title \"Mikser opptak…\""
+if [[ -s "${mic_part}" ]] &amp;&amp; /opt/homebrew/bin/sox -m "${sys_part}" "|/opt/homebrew/bin/sox \"${mic_part}\" -p channels 2" "${outfile}" gain -n -1 2&gt;&gt; "${mix_log}"; then
+  rm -f "${sys_part}" "${mic_part}"
+  readonly what="systemlyd + mikrofon"
+elif mv "${sys_part}" "${outfile}" 2&gt;&gt; "${mix_log}"; then
+  readonly what="bare systemlyd – miks feilet, se mix.log"
+else
+  osascript -e 'display notification "Fant ikke opptaket – se mix.log" with title "Opptak feilet"'
+  exit 1
+fi
+
 readonly secs="$(/opt/homebrew/bin/ffprobe -v error -show_entries format=duration -of csv=p=0 "${outfile}" 2&gt;/dev/null | cut -d. -f1)"
-osascript -e "display notification \"${outfile##*/} (${secs:-?} s)\" with title \"Opptak lagret\""
+osascript -e "display notification \"${base} (${secs:-?} s, ${what})\" with title \"Opptak lagret\""
 </string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
@@ -925,7 +982,7 @@ osascript -e "display notification \"$(basename "${src}")\" with title \"Transkr
 		</dict>
 	</array>
 	<key>readme</key>
-	<string>Krever switchaudio-osx (brew install switchaudio-osx) og to Multi-Output-enheter satt opp i Audio MIDI Setup: 'Hodetelefoner+BlackHole' og 'MacBook+BlackHole', begge med BlackHole 2ch inkludert.</string>
+	<string>Krever switchaudio-osx (brew install switchaudio-osx), sox og Multi-Output-enheter satt opp i Audio MIDI Setup ('Hodetelefoner+BlackHole', 'MacBook+BlackHole', 'Jack+BlackHole'), alle med BlackHole 2ch inkludert. Opptak tar opp BlackHole (systemlyd) og standard mikrofon i to sox-jobber under launchd og mikser dem ved stopp.</string>
 	<key>uidata</key>
 	<dict>
 		<key>1A2B3C4D-0001-4A00-8000-A1B2C3D4E5F1</key>
