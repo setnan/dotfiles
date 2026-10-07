@@ -61,6 +61,23 @@ alias dcu="docker compose up"
 alias dcd="docker compose down"
 alias dcdb="docker compose up db"
 
+# Minecraft-server (~/Servers/minecraft). Uten argument: start + følg logg.
+# Ellers sendes argumentene til mc.sh: mineserve status | down | restart | console | cmd list …
+function mineserve {
+  local dir="$HOME/Servers/minecraft"
+  [[ -x "$dir/mc.sh" ]] || { echo "Fant ikke $dir/mc.sh" >&2; return 1; }
+  if [[ $(uname) == Darwin ]] && ! docker info >/dev/null 2>&1; then
+    echo "Starter Docker Desktop …"
+    open -a Docker
+    until docker info >/dev/null 2>&1; do sleep 2; done
+  fi
+  if (( $# == 0 )); then
+    "$dir/mc.sh" up && "$dir/mc.sh" logs
+  else
+    "$dir/mc.sh" "$@"
+  fi
+}
+
 # OSX or not
 if [[ `uname` == "Darwin" ]]; then
   alias open=open
@@ -79,3 +96,6 @@ function serve {
     python3 -m http.server "$port"
   fi
 }
+
+# Bygg/oppdater Fly.io-docset for Dash (søkbart i Alfred med "fly <søk>")
+alias fly-docset="python3 ~/.dotfiles/dash/build-fly-docset.py"
