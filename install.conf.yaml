@@ -22,3 +22,4 @@
     ~/.config/starship.toml: starship.toml
     ~/.config/micro/settings.json: micro/settings.json
     ~/.config/micro/bindings.json: micro/bindings.json
+    ~/.config/zed/settings.json: zed/settings.json
