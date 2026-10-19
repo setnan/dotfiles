@@ -22,6 +22,7 @@
   editor = micro
   excludesfile = ~/.gitignore_global
   autocrlf = false
+	pager = delta
 [pull]
   rebase = true
 [init]
@@ -33,3 +34,5 @@
   required = true
 [include]
   path = ~/.gitconfig_local
+[delta]
+	side-by-side = true
