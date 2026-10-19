@@ -1,0 +1,350 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>bundleid</key>
+	<string>no.etnan.innboks</string>
+	<key>category</key>
+	<string>Productivity</string>
+	<key>connections</key>
+	<dict>
+		<key>C7E1A9D4-5B2F-4E83-9A61-3D8F0B2C7E01</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>C7E1A9D4-5B2F-4E83-9A61-3D8F0B2C7E03</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+			<dict>
+				<key>destinationuid</key>
+				<string>C7E1A9D4-5B2F-4E83-9A61-3D8F0B2C7E04</string>
+				<key>modifiers</key>
+				<integer>1048576</integer>
+				<key>modifiersubtext</key>
+				<string>Legg til i Handel</string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>C7E1A9D4-5B2F-4E83-9A61-3D8F0B2C7E02</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>C7E1A9D4-5B2F-4E83-9A61-3D8F0B2C7E03</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+			<dict>
+				<key>destinationuid</key>
+				<string>C7E1A9D4-5B2F-4E83-9A61-3D8F0B2C7E04</string>
+				<key>modifiers</key>
+				<integer>1048576</integer>
+				<key>modifiersubtext</key>
+				<string>Legg til i Handel</string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>C7E1A9D4-5B2F-4E83-9A61-3D8F0B2C7E03</key>
+		<array/>
+		<key>C7E1A9D4-5B2F-4E83-9A61-3D8F0B2C7E04</key>
+		<array/>
+		<key>C7E1A9D4-5B2F-4E83-9A61-3D8F0B2C7E05</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>C7E1A9D4-5B2F-4E83-9A61-3D8F0B2C7E04</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>C7E1A9D4-5B2F-4E83-9A61-3D8F0B2C7E06</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>C7E1A9D4-5B2F-4E83-9A61-3D8F0B2C7E04</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+	</dict>
+	<key>createdby</key>
+	<string>Simon Etnan</string>
+	<key>description</key>
+	<string>Hurtignotat og handleliste som avkrysningspunkt i Obsidian (+/Innboks og +/Handel)</string>
+	<key>disabled</key>
+	<false/>
+	<key>name</key>
+	<string>Innboks</string>
+	<key>objects</key>
+	<array>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argumenttype</key>
+				<integer>0</integer>
+				<key>keyword</key>
+				<string>n</string>
+				<key>skipuniversalaction</key>
+				<true/>
+				<key>subtext</key>
+				<string>Enter: punkt i Innboks → Notater · komma = flere punkter · Cmd+Enter: punkt i Handel</string>
+				<key>text</key>
+				<string>Innboks: {query}</string>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.keyword</string>
+			<key>uid</key>
+			<string>C7E1A9D4-5B2F-4E83-9A61-3D8F0B2C7E01</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argumenttype</key>
+				<integer>0</integer>
+				<key>keyword</key>
+				<string>note</string>
+				<key>skipuniversalaction</key>
+				<true/>
+				<key>subtext</key>
+				<string>Enter: punkt i Innboks → Notater · komma = flere punkter · Cmd+Enter: punkt i Handel</string>
+				<key>text</key>
+				<string>Innboks: {query}</string>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.keyword</string>
+			<key>uid</key>
+			<string>C7E1A9D4-5B2F-4E83-9A61-3D8F0B2C7E02</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>script</key>
+				<string>note_path="${innboks_path:-/Users/simonetnan/Documents/Koderiet/RSA/md/SE-v2/+/Innboks.md}" /usr/bin/python3 note_add.py Notater "$1"</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>type</key>
+				<integer>11</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>C7E1A9D4-5B2F-4E83-9A61-3D8F0B2C7E03</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>script</key>
+				<string>note_path="${handel_path:-/Users/simonetnan/Documents/Koderiet/RSA/md/SE-v2/+/Handel.md}" /usr/bin/python3 note_add.py "" "$1"</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>type</key>
+				<integer>11</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>C7E1A9D4-5B2F-4E83-9A61-3D8F0B2C7E04</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argumenttype</key>
+				<integer>0</integer>
+				<key>keyword</key>
+				<string>h</string>
+				<key>skipuniversalaction</key>
+				<true/>
+				<key>subtext</key>
+				<string>Enter: punkt i +/Handel · komma = flere punkter · tall sist = antall (melk 2 → melk x2)</string>
+				<key>text</key>
+				<string>Handel: {query}</string>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.keyword</string>
+			<key>uid</key>
+			<string>C7E1A9D4-5B2F-4E83-9A61-3D8F0B2C7E05</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argumenttype</key>
+				<integer>0</integer>
+				<key>keyword</key>
+				<string>handleliste</string>
+				<key>skipuniversalaction</key>
+				<true/>
+				<key>subtext</key>
+				<string>Enter: punkt i +/Handel · komma = flere punkter · tall sist = antall (melk 2 → melk x2)</string>
+				<key>text</key>
+				<string>Handel: {query}</string>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.keyword</string>
+			<key>uid</key>
+			<string>C7E1A9D4-5B2F-4E83-9A61-3D8F0B2C7E06</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+	</array>
+	<key>readme</key>
+	<string>Hurtignotat og handleliste til Obsidian-vaulten SE-v2.
+
+Keyword: n &lt;tekst&gt;  eller  note &lt;tekst&gt;
+- Enter legger teksten til som «- [ ] tekst» under «## Notater» i +/Innboks.md.
+- Cmd+Enter legger den i +/Handel.md i stedet.
+- Seksjonen opprettes automatisk øverst i notatet om den mangler.
+
+Keyword: h &lt;tekst&gt;  eller  handleliste &lt;tekst&gt;
+- Enter legger teksten til som «- [ ] tekst» nederst i +/Handel.md.
+- Tall til slutt blir antall: «Laktosefri melk 2», «melk x2» eller «melk 2 stk» → «Laktosefri melk x2».
+
+Hver gang et punkt legges til settes «updated: ÅÅÅÅ-MM-DD TT:MM» i frontmatter,
+rett under «created:». Komma skiller flere punkter i én omgang: «melk 2, brød, egg 12» gir tre punkter.
+Notatene opprettes med frontmatter om de ikke finnes. Stiene kan overstyres
+med workflow-variablene innboks_path og handel_path.</string>
+	<key>uidata</key>
+	<dict>
+		<key>C7E1A9D4-5B2F-4E83-9A61-3D8F0B2C7E01</key>
+		<dict>
+			<key>xpos</key>
+			<integer>30</integer>
+			<key>ypos</key>
+			<integer>30</integer>
+		</dict>
+		<key>C7E1A9D4-5B2F-4E83-9A61-3D8F0B2C7E02</key>
+		<dict>
+			<key>xpos</key>
+			<integer>30</integer>
+			<key>ypos</key>
+			<integer>180</integer>
+		</dict>
+		<key>C7E1A9D4-5B2F-4E83-9A61-3D8F0B2C7E03</key>
+		<dict>
+			<key>xpos</key>
+			<integer>290</integer>
+			<key>ypos</key>
+			<integer>30</integer>
+		</dict>
+		<key>C7E1A9D4-5B2F-4E83-9A61-3D8F0B2C7E04</key>
+		<dict>
+			<key>xpos</key>
+			<integer>290</integer>
+			<key>ypos</key>
+			<integer>330</integer>
+		</dict>
+		<key>C7E1A9D4-5B2F-4E83-9A61-3D8F0B2C7E05</key>
+		<dict>
+			<key>xpos</key>
+			<integer>30</integer>
+			<key>ypos</key>
+			<integer>330</integer>
+		</dict>
+		<key>C7E1A9D4-5B2F-4E83-9A61-3D8F0B2C7E06</key>
+		<dict>
+			<key>xpos</key>
+			<integer>30</integer>
+			<key>ypos</key>
+			<integer>480</integer>
+		</dict>
+	</dict>
+	<key>userconfigurationconfig</key>
+	<array>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>default</key>
+				<string>/Users/simonetnan/Documents/Koderiet/RSA/md/SE-v2/+/Innboks.md</string>
+				<key>filtermode</key>
+				<integer>1</integer>
+				<key>placeholder</key>
+				<string></string>
+				<key>required</key>
+				<false/>
+			</dict>
+			<key>description</key>
+			<string>Markdown-filen hurtignotater (n/note) legges i</string>
+			<key>label</key>
+			<string>Innboks-notat</string>
+			<key>type</key>
+			<string>filepicker</string>
+			<key>variable</key>
+			<string>innboks_path</string>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>default</key>
+				<string>/Users/simonetnan/Documents/Koderiet/RSA/md/SE-v2/+/Handel.md</string>
+				<key>filtermode</key>
+				<integer>1</integer>
+				<key>placeholder</key>
+				<string></string>
+				<key>required</key>
+				<false/>
+			</dict>
+			<key>description</key>
+			<string>Markdown-filen handlelista (h/handleliste) legges i</string>
+			<key>label</key>
+			<string>Handel-notat</string>
+			<key>type</key>
+			<string>filepicker</string>
+			<key>variable</key>
+			<string>handel_path</string>
+		</dict>
+	</array>
+	<key>variablesdontexport</key>
+	<array/>
+	<key>version</key>
+	<string>1.0</string>
+	<key>webaddress</key>
+	<string></string>
+</dict>
+</plist>
