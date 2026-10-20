@@ -7,8 +7,15 @@ Keyword `n <tekst>` / `note <tekst>` in Alfred appends `- [ ] <tekst>` under
 `## Notater` in the inbox note (+/Innboks.md in the SE-v2 vault). If the
 heading is missing it is created above the first existing `## ` heading so
 quick notes land at the top. Keyword `h <tekst>` / `handleliste <tekst>` runs
-the same script with an empty section against +/Handel.md, which appends the
-item at the end of the file. In that mode a trailing number is a quantity:
+the same script with an empty section against +/Handel.md (shopping mode).
+There the item goes under `## Handleliste`, or under a store sub-heading
+inside it when a store keyword is given: `Glutenfri musli obs 3` →
+`- [ ] Glutenfri musli x3` under `### Obs`. Keywords (case-insensitive, first
+or last word of an item): obs, kiwi, meny, rema → Rema 1000, claes/clas → Clas Ohlson,
+bil → Biltema, t → Thansen, farma/apo → Apotek, sunn → Sunnkost. A leading
+keyword applies to every comma-separated part (`obs melk, brød` → both under
+Obs). Store-less items land above the first `###`; a missing store heading is
+created at the end of the Handleliste section. A trailing number is a quantity:
 `Laktosefri melk 2` (or `x2`, `2x`, `2 stk`) becomes `Laktosefri melk x2`.
 Comma-separated input (`melk 2, brød, egg 12`) becomes one item per part.
 
@@ -102,6 +109,122 @@ def with_quantity(text):
     return f"{m.group('name').strip()} x{int(m.group('qty'))}"
 
 
+SHOP_SECTION = "Handleliste"  # items without a store keyword go here
+
+# keyword (lower-case) → heading. Keep keywords single words.
+STORES = {
+    "obs": "Obs",
+    "kiwi": "Kiwi",
+    "meny": "Meny",
+    "rema": "Rema 1000",
+    "claes": "Clas Ohlson",
+    "clas": "Clas Ohlson",
+    "bil": "Biltema",
+    "t": "Thansen",
+    "farma": "Apotek",
+    "apo": "Apotek",
+    "sunn": "Sunnkost",
+}
+
+
+def split_store(text):
+    """Strip a store keyword from the first or last word of `text`.
+
+    Returns (text_without_keyword, store_heading or None). The quantity, if
+    any, is kept at the end so `musli obs 3` and `obs musli 3` both work.
+    """
+    m = QTY_RE.match(text)
+    name, qty = (m.group("name").strip(), m.group("qty")) if m else (text, None)
+    words = name.split()
+    store = None
+    if len(words) > 1 and words[-1].lower() in STORES:
+        store = STORES[words[-1].lower()]
+        words = words[:-1]
+    elif len(words) > 1 and words[0].lower() in STORES:
+        store = STORES[words[0].lower()]
+        words = words[1:]
+    name = " ".join(words)
+    if qty is not None:
+        name = f"{name} {qty}"
+    return name, store
+
+
+def shopping_items(text):
+    """Split shopping input into [(store_heading_or_None, item_text)] pairs.
+
+    A store keyword leading the whole query sets the default store for every
+    comma-separated part; a part can still name its own store.
+    """
+    parts = [t.strip() for t in text.split(",") if t.strip()]
+    default = None
+    if parts:
+        first = parts[0].split()
+        if len(first) > 1 and first[0].lower() in STORES:
+            default = STORES[first[0].lower()]
+            parts[0] = " ".join(first[1:])
+    out = []
+    for part in parts:
+        name, store = split_store(part)
+        out.append((store or default, with_quantity(name)))
+    return out
+
+
+def find_section(lines, heading, level, lo=0, hi=None):
+    """(start, end) of the section whose heading line equals `heading`.
+
+    `end` is exclusive: the next heading of level <= `level` within
+    lines[lo:hi], or `hi`. None if the heading is not found.
+    """
+    hi = len(lines) if hi is None else hi
+    start = next((i for i in range(lo, hi) if lines[i].strip() == heading), None)
+    if start is None:
+        return None
+    boundary = re.compile(r"^#{1,%d}\s" % level)
+    end = next((i for i in range(start + 1, hi) if boundary.match(lines[i])), hi)
+    return start, end
+
+
+def insert_shopping(content, store, item):
+    """Shopping mode: `## Handleliste` holds store-less items directly and
+    one `### <store>` sub-section per store (created at the end of the
+    Handleliste section when first used)."""
+    lines = content.rstrip("\n").split("\n")
+    sec = find_section(lines, f"## {SHOP_SECTION}", 2)
+    if sec is None:
+        if lines and lines[-1].strip():
+            lines.append("")
+        lines += [f"## {SHOP_SECTION}", ""]
+        sec = (len(lines) - 2, len(lines))
+    start, end = sec
+    if store:
+        sub = find_section(lines, f"### {store}", 3, start + 1, end)
+        if sub is None:
+            pos = end
+            while pos > start + 1 and lines[pos - 1].strip() == "":
+                pos -= 1
+            lines[pos:pos] = ["", f"### {store}", ""]
+            start, end = pos + 1, pos + 3
+        else:
+            start, end = sub
+    else:
+        # Only the part of Handleliste above its first store sub-heading.
+        end = next(
+            (i for i in range(start + 1, end) if re.match(r"^###\s", lines[i])), end
+        )
+    last = end - 1
+    while last > start and lines[last].strip() == "":
+        last -= 1
+    if last == start:
+        lines[start + 1 : start + 1] = ["", item]
+        at = start + 2
+    else:
+        lines.insert(last + 1, item)
+        at = last + 1
+    if at + 1 < len(lines) and lines[at + 1].startswith("#"):
+        lines.insert(at + 1, "")  # keep a blank line before the next heading
+    return "\n".join(lines) + "\n"
+
+
 def append_at_end(content, item):
     lines = content.split("\n")
     while lines and lines[-1].strip() == "":
@@ -171,13 +294,16 @@ def main():
     path = (os.environ.get("note_path") or "").strip() or DEFAULT_NOTE
 
     # Comma-separated input becomes one checklist item per part.
-    texts = [t.strip() for t in text.split(",") if t.strip()]
-    if not section:  # shopping-list mode: trailing number = quantity
-        texts = [with_quantity(t) for t in texts]
-
     content = load(path)
-    for t in texts:
-        content = insert_item(content, section, f"- [ ] {t}")
+    if section:
+        pairs = [(section, t.strip()) for t in text.split(",") if t.strip()]
+        for sec, t in pairs:
+            content = insert_item(content, sec, f"- [ ] {t}")
+    else:  # shopping mode: store keywords → ### sub-heading, trailing number = qty
+        pairs = shopping_items(text)
+        for store, t in pairs:
+            content = insert_shopping(content, store, f"- [ ] {t}")
+        pairs = [(store or SHOP_SECTION, t) for store, t in pairs]
     content = set_updated(content, now_stamp())
     if not content.endswith("\n"):
         content += "\n"
@@ -187,7 +313,8 @@ def main():
         f.write(content)
 
     title = os.path.splitext(os.path.basename(path))[0]
-    notify(f"{title} → {section}" if section else title, " · ".join(texts))
+    sections = list(dict.fromkeys(sec for sec, _ in pairs))
+    notify(f"{title} → {' / '.join(sections)}", " · ".join(t for _, t in pairs))
     return 0
 
 

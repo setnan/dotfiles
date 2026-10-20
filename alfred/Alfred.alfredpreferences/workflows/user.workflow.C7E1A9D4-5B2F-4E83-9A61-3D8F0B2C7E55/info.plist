@@ -197,7 +197,7 @@
 				<key>skipuniversalaction</key>
 				<true/>
 				<key>subtext</key>
-				<string>Enter: punkt i +/Handel · komma = flere punkter · tall sist = antall (melk 2 → melk x2)</string>
+				<string>Enter: punkt i +/Handel · butikk: obs/kiwi/meny/rema/claes/bil/t/farma/apo/sunn → egen overskrift · komma = flere · tall sist = antall</string>
 				<key>text</key>
 				<string>Handel: {query}</string>
 				<key>withspace</key>
@@ -220,7 +220,7 @@
 				<key>skipuniversalaction</key>
 				<true/>
 				<key>subtext</key>
-				<string>Enter: punkt i +/Handel · komma = flere punkter · tall sist = antall (melk 2 → melk x2)</string>
+				<string>Enter: punkt i +/Handel · butikk: obs/kiwi/meny/rema/claes/bil/t/farma/apo/sunn → egen overskrift · komma = flere · tall sist = antall</string>
 				<key>text</key>
 				<string>Handel: {query}</string>
 				<key>withspace</key>
