@@ -13,3 +13,8 @@ zsh_profile.*
 alfred/Alfred.alfredpreferences/remote/
 alfred/Alfred.alfredpreferences/workflows/*/node_modules/
 alfred/Alfred.alfredpreferences/workflows/*/.venv/
+
+# Alfred: per-machine workflow configuration (real paths etc.) and saved window layouts
+# (snapshots of window titles) stay local.
+alfred/Alfred.alfredpreferences/workflows/*/prefs.plist
+alfred/Alfred.alfredpreferences/workflows/user.workflow.D2F4B8A1-6C3E-4F97-8B25-1E9A7C0D4F66/layouts/

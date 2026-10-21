@@ -305,7 +305,29 @@ Legg til Scryfall-søkesyntaks i søket for å snevre inn, f.eks. "mtg bolt set:
 		</dict>
 	</dict>
 	<key>userconfigurationconfig</key>
-	<array/>
+	<array>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>default</key>
+				<string>~/Documents/Obsidian/Vault/MTG – Ønskeliste.md</string>
+				<key>filtermode</key>
+				<integer>1</integer>
+				<key>placeholder</key>
+				<string></string>
+				<key>required</key>
+				<false/>
+			</dict>
+			<key>description</key>
+			<string>Obsidian-notatet ønskelista skrives til (Shift+Enter på et kort).</string>
+			<key>label</key>
+			<string>Ønskeliste-notat</string>
+			<key>type</key>
+			<string>filepicker</string>
+			<key>variable</key>
+			<string>wishlist_path</string>
+		</dict>
+	</array>
 	<key>variablesdontexport</key>
 	<array/>
 	<key>version</key>

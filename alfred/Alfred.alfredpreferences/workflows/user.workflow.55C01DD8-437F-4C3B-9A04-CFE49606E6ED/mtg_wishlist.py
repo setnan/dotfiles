@@ -12,9 +12,8 @@ import os
 import re
 import subprocess
 
-NOTE_PATH = (
-    "/Users/simonetnan/Documents/Koderiet/RSA/md/SE-v2/Efforts/Areas/"
-    "Privilege/MTG/MTG – Ønskeliste.md"
+NOTE_PATH = os.path.expanduser(
+    os.environ.get("wishlist_path") or "~/Documents/Obsidian/Vault/MTG – Ønskeliste.md"
 )
 
 TEMPLATE = """---

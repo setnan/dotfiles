@@ -149,7 +149,7 @@
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>script</key>
-				<string>note_path="${innboks_path:-/Users/simonetnan/Documents/Koderiet/RSA/md/SE-v2/+/Innboks.md}" /usr/bin/python3 note_add.py Notater "$1"</string>
+				<string>note_path="${innboks_path:-$HOME/Documents/Obsidian/Vault/+/Innboks.md}" /usr/bin/python3 note_add.py Notater "$1"</string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
 				<key>scriptfile</key>
@@ -172,7 +172,7 @@
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>script</key>
-				<string>note_path="${handel_path:-/Users/simonetnan/Documents/Koderiet/RSA/md/SE-v2/+/Handel.md}" /usr/bin/python3 note_add.py "" "$1"</string>
+				<string>note_path="${handel_path:-$HOME/Documents/Obsidian/Vault/+/Handel.md}" /usr/bin/python3 note_add.py "" "$1"</string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
 				<key>scriptfile</key>
@@ -235,7 +235,7 @@
 		</dict>
 	</array>
 	<key>readme</key>
-	<string>Hurtignotat og handleliste til Obsidian-vaulten SE-v2.
+	<string>Hurtignotat og handleliste til Obsidian-vaulten din.
 
 Keyword: n &lt;tekst&gt;  eller  note &lt;tekst&gt;
 - Enter legger teksten til som «- [ ] tekst» under «## Notater» i +/Innboks.md.
@@ -301,7 +301,7 @@ med workflow-variablene innboks_path og handel_path.</string>
 			<key>config</key>
 			<dict>
 				<key>default</key>
-				<string>/Users/simonetnan/Documents/Koderiet/RSA/md/SE-v2/+/Innboks.md</string>
+				<string>~/Documents/Obsidian/Vault/+/Innboks.md</string>
 				<key>filtermode</key>
 				<integer>1</integer>
 				<key>placeholder</key>
@@ -322,7 +322,7 @@ med workflow-variablene innboks_path og handel_path.</string>
 			<key>config</key>
 			<dict>
 				<key>default</key>
-				<string>/Users/simonetnan/Documents/Koderiet/RSA/md/SE-v2/+/Handel.md</string>
+				<string>~/Documents/Obsidian/Vault/+/Handel.md</string>
 				<key>filtermode</key>
 				<integer>1</integer>
 				<key>placeholder</key>

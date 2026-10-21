@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>bundleid</key>
-	<string>no.koderiet.alfred.claude-usage</string>
+	<string>no.etnan.claude-usage</string>
 	<key>category</key>
 	<string>Productivity</string>
 	<key>connections</key>
@@ -77,9 +77,9 @@ Leser OAuth-tokenet Claude Code lagrer i nøkkelringen ("Claude Code-credentials
 		<key>9EC5DCED-7F3D-4B0B-A6BE-42C79A4669A1</key>
 		<dict>
 			<key>xpos</key>
-			<real>50</real>
+			<real>50.0</real>
 			<key>ypos</key>
-			<real>50</real>
+			<real>50.0</real>
 		</dict>
 	</dict>
 	<key>userconfigurationconfig</key>

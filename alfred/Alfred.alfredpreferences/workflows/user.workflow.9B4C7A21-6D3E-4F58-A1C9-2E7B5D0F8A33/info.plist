@@ -264,7 +264,7 @@
 		</dict>
 	</array>
 	<key>readme</key>
-	<string>Søk i Obsidian-vaulten SE-v2 fra Alfred.
+	<string>Søk i Obsidian-vaulten din fra Alfred.
 
 Keyword: ob &lt;søk&gt;  eller  obsidian &lt;søk&gt;
 
@@ -321,7 +321,7 @@ Vault-sti og -navn kan overstyres med workflow-variablene vault_path og vault_na
 			<key>config</key>
 			<dict>
 				<key>default</key>
-				<string>/Users/simonetnan/Documents/Koderiet/RSA/md/SE-v2</string>
+				<string>~/Documents/Obsidian/Vault</string>
 				<key>filtermode</key>
 				<integer>2</integer>
 				<key>placeholder</key>
@@ -342,7 +342,7 @@ Vault-sti og -navn kan overstyres med workflow-variablene vault_path og vault_na
 			<key>config</key>
 			<dict>
 				<key>default</key>
-				<string>SE-v2</string>
+				<string>Vault</string>
 				<key>placeholder</key>
 				<string></string>
 				<key>required</key>

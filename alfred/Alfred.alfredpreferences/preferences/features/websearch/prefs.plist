@@ -33,7 +33,7 @@
 			<key>keyword</key>
 			<string>fl</string>
 			<key>text</key>
-			<string>Finn.no lokalt (Sandefjord/Tønsberg) etter '{query}'</string>
+			<string>Finn.no i nærheten etter '{query}'</string>
 			<key>url</key>
 			<string>https://www.finn.no/recommerce/forsale/search?location=1.20008.20134&amp;location=1.20008.20133&amp;q={query}</string>
 		</dict>

@@ -4,7 +4,7 @@
 Usage: note_add.py <section> "<text>"      (env: note_path)
 
 Keyword `n <tekst>` / `note <tekst>` in Alfred appends `- [ ] <tekst>` under
-`## Notater` in the inbox note (+/Innboks.md in the SE-v2 vault). If the
+`## Notater` in the inbox note (+/Innboks.md in the vault). If the
 heading is missing it is created above the first existing `## ` heading so
 quick notes land at the top. Keyword `h <tekst>` / `handleliste <tekst>` runs
 the same script with an empty section against +/Handel.md (shopping mode).
@@ -36,9 +36,7 @@ import subprocess
 import sys
 import urllib.request
 
-DEFAULT_NOTE = (
-    "/Users/simonetnan/Documents/Koderiet/RSA/md/SE-v2/+/Innboks.md"
-)
+DEFAULT_NOTE = os.path.expanduser("~/Documents/Obsidian/Vault/+/Innboks.md")
 
 TEMPLATE = """---
 up:

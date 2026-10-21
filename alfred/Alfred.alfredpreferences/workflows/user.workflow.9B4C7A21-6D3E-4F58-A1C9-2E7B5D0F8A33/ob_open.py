@@ -8,7 +8,7 @@ import subprocess
 import sys
 import urllib.parse
 
-VAULT_PATH = os.environ.get("vault_path") or "/Users/simonetnan/Documents/Koderiet/RSA/md/SE-v2"
+VAULT_PATH = os.path.expanduser(os.environ.get("vault_path") or "~/Documents/Obsidian/Vault")
 VAULT_NAME = os.environ.get("vault_name") or os.path.basename(VAULT_PATH.rstrip("/"))
 
 

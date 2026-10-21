@@ -10,7 +10,7 @@ import os
 import subprocess
 import sys
 
-VAULT_PATH = os.environ.get("vault_path") or "/Users/simonetnan/Documents/Koderiet/RSA/md/SE-v2"
+VAULT_PATH = os.path.expanduser(os.environ.get("vault_path") or "~/Documents/Obsidian/Vault")
 VAULT_NAME = os.environ.get("vault_name") or os.path.basename(VAULT_PATH.rstrip("/"))
 OBSIDIAN_APP = "/Applications/Obsidian.app"
 SKIP_DIRS = {".obsidian", ".trash", ".git", "node_modules"}
