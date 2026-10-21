@@ -179,6 +179,19 @@
 				<false/>
 			</dict>
 		</array>
+		<key>FAAE31A2-994C-4D63-92EF-F3AE5EE676BE</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>F40E45AD-FDA0-4E98-82D0-9A1204981FBE</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
 	</dict>
 	<key>createdby</key>
 	<string>Simon Etnan</string>
@@ -377,25 +390,59 @@
 		<dict>
 			<key>config</key>
 			<dict>
+				<key>alfredfiltersresults</key>
+				<true/>
+				<key>alfredfiltersresultsmatchmode</key>
+				<integer>0</integer>
+				<key>argumenttreatemptyqueryasnil</key>
+				<true/>
+				<key>argumenttrimmode</key>
+				<integer>0</integer>
 				<key>argumenttype</key>
-				<integer>2</integer>
+				<integer>1</integer>
+				<key>escaping</key>
+				<integer>102</integer>
 				<key>keyword</key>
 				<string>record</string>
+				<key>queuedelaycustom</key>
+				<integer>1</integer>
+				<key>queuedelayimmediatelyinitially</key>
+				<true/>
+				<key>queuedelaymode</key>
+				<integer>0</integer>
+				<key>queuemode</key>
+				<integer>1</integer>
+				<key>runningsubtext</key>
+				<string></string>
+				<key>script</key>
+				<string>cat &lt;&lt;'JSON'
+{"items": [
+  {"title": "Start opptak: systemlyd + mikrofon", "subtitle": "BlackHole (Teams) + din mikrofon, mikset ved stopp · «stoprecording» stopper", "arg": "", "match": "opptak standard begge"},
+  {"title": "Start opptak: bare systemlyd (mute)", "subtitle": "Bare BlackHole (Teams) – når din egen mikrofon er av · «stoprecording» stopper", "arg": "mute", "match": "mute mutet muted sys system teams blackhole bare"}
+]}
+JSON
+</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
 				<key>skipuniversalaction</key>
 				<true/>
 				<key>subtext</key>
-				<string>Tar opp systemlyd (BlackHole 2ch) og mikrofon, mikset til én WAV i ~/Downloads</string>
-				<key>text</key>
+				<string>Velg: systemlyd + mikrofon, eller bare systemlyd (mute)</string>
+				<key>title</key>
 				<string>Start opptak (BlackHole)</string>
+				<key>type</key>
+				<integer>11</integer>
 				<key>withspace</key>
-				<false/>
+				<true/>
 			</dict>
 			<key>type</key>
-			<string>alfred.workflow.input.keyword</string>
+			<string>alfred.workflow.input.scriptfilter</string>
 			<key>uid</key>
 			<string>FAAE31A2-994C-4D63-92EF-F3AE5EE676BD</string>
 			<key>version</key>
-			<integer>1</integer>
+			<integer>3</integer>
 		</dict>
 		<dict>
 			<key>config</key>
@@ -415,6 +462,16 @@ if [[ -f "${pid_file}" ]] &amp;&amp; kill -0 "$(&lt; "${pid_file}")" 2&gt;/dev/n
   exit 0
 fi
 rm -f "${pid_file}" "${mic_pid_file}"
+
+# `record mute` / `rec mute`: bare systemlyd (BlackHole), ingen mikrofonjobb. For møter der din
+# egen mikrofon er av (f.eks. kollega ved siden av har sin på – alt kommer da rent via Teams),
+# så høyttalerlekkasje i mikrofonen ikke forurenser opptaket (2026-10-21). Flagget leses av stopp.
+readonly mode="$(printf '%s' "${1:-}" | tr '[:upper:]' '[:lower:]' | xargs)"
+readonly sysonly_flag="${alfred_workflow_data}/sysonly"
+rm -f "${sysonly_flag}"
+case "${mode}" in
+  m*|sys*|teams|blackhole|bare*) touch "${sysonly_flag}" ;;  # `rec m` holder
+esac
 
 # Husk hva som var aktiv utgang, så stopp kan sette den tilbake.
 /opt/homebrew/bin/SwitchAudioSource -c &gt; "${alfred_workflow_data}/previous_output.txt"
@@ -457,7 +514,7 @@ start_job() {
 &lt;plist version="1.0"&gt;&lt;dict&gt;
   &lt;key&gt;Label&lt;/key&gt;&lt;string&gt;${label}&lt;/string&gt;
   &lt;key&gt;ProgramArguments&lt;/key&gt;&lt;array&gt;
-    &lt;string&gt;/opt/homebrew/bin/sox&lt;/string&gt;&lt;string&gt;-q&lt;/string&gt;
+    &lt;string&gt;/opt/homebrew/bin/sox&lt;/string&gt;&lt;string&gt;-q&lt;/string&gt;&lt;string&gt;--buffer&lt;/string&gt;&lt;string&gt;1048576&lt;/string&gt;
     &lt;string&gt;-t&lt;/string&gt;&lt;string&gt;coreaudio&lt;/string&gt;&lt;string&gt;${device}&lt;/string&gt;
     &lt;string&gt;-r&lt;/string&gt;&lt;string&gt;44100&lt;/string&gt;&lt;string&gt;-b&lt;/string&gt;&lt;string&gt;16&lt;/string&gt;&lt;string&gt;-c&lt;/string&gt;&lt;string&gt;${channels}&lt;/string&gt;
     &lt;string&gt;${file}&lt;/string&gt;
@@ -477,7 +534,7 @@ job_pid() {
 
 # Start begge før vi venter, så sporene starter så likt som mulig.
 start_job com.simonetnan.blackhole-recording "BlackHole 2ch" 2 "${parts_dir}/${stamp}-system.wav"
-start_job com.simonetnan.mic-recording default 1 "${parts_dir}/${stamp}-mic.wav"
+[[ -f "${sysonly_flag}" ]] || start_job com.simonetnan.mic-recording default 1 "${parts_dir}/${stamp}-mic.wav"
 sleep 1
 
 readonly sys_pid="$(job_pid com.simonetnan.blackhole-recording)"
@@ -493,6 +550,8 @@ echo "${outfile}" &gt; "${alfred_workflow_data}/last_recording.txt"
 if [[ -n "${mic_pid}" ]]; then
   echo "${mic_pid}" &gt; "${mic_pid_file}"
   osascript -e "display notification \"${outfile##*/} (systemlyd + mikrofon)\" with title \"Opptak startet\""
+elif [[ -f "${sysonly_flag}" ]]; then
+  osascript -e "display notification \"${outfile##*/} (bare systemlyd – mute)\" with title \"Opptak startet\""
 else
   osascript -e "display notification \"${outfile##*/} – mikrofon startet ikke, se mic-recording.log\" with title \"Opptak startet (bare systemlyd)\""
 fi
@@ -546,6 +605,7 @@ fi
 readonly mic_pid_file="${alfred_workflow_data}/mic.pid"
 readonly parts_dir="${alfred_workflow_data}/parts"
 readonly mix_log="${alfred_workflow_data}/mix.log"
+readonly sysonly_flag="${alfred_workflow_data}/sysonly"
 
 restore_output() {
   local outputs previous
@@ -582,7 +642,7 @@ if [[ ! -f "${pid_file}" ]] || ! kill -0 "$(&lt; "${pid_file}")" 2&gt;/dev/null;
 fi
 
 readonly sys_pid="$(&lt; "${pid_file}")"
-readonly mic_pid="$(&lt; "${mic_pid_file}" 2&gt;/dev/null)"
+readonly mic_pid="$([[ -f "${mic_pid_file}" ]] &amp;&amp; cat "${mic_pid_file}")"
 
 # Ctrl-C lar sox skrive ferdig WAV-headeren. Send til begge først, vent etterpå.
 kill -INT "${sys_pid}" 2&gt;/dev/null
@@ -606,9 +666,21 @@ readonly mic_part="${parts_dir}/${stamp}-mic.wav"
 # `-m` skalerer hver kilde med 1/n, `gain -n -1` normaliserer toppen til -1 dBFS etterpå.
 # Delfilene slettes bare når miksen lyktes; feiler den, flyttes systemsporet til Downloads.
 osascript -e "display notification \"${base}\" with title \"Mikser opptak…\""
-if [[ -s "${mic_part}" ]] &amp;&amp; /opt/homebrew/bin/sox -m "${sys_part}" "|/opt/homebrew/bin/sox \"${mic_part}\" -p channels 2" "${outfile}" gain -n -1 2&gt;&gt; "${mix_log}"; then
+# ffmpeg-miks (2026-10-21): hvert spor normaliseres for seg (loudnorm), mikrofonen dempes mens
+# systemlyden er aktiv (sidechaincompress) – uten hodetelefoner lekker motparten inn i mikrofonen
+# via høyttalerne med romklang, og dobbeltkopien ga utsmurt tale og 4 KB transkript av 31 min.
+# Så mikses sporene og begrenses til -0,5 dBFS. Feiler ffmpeg, brukes den gamle sox-miksen.
+readonly mix_filter='[0:a]loudnorm=I=-18:TP=-2:LRA=11,asplit=2[sys][sc];[1:a]aformat=channel_layouts=stereo,loudnorm=I=-18:TP=-2:LRA=11[mic];[mic][sc]sidechaincompress=threshold=0.02:ratio=10:attack=5:release=400:makeup=1[micd];[sys][micd]amix=inputs=2:duration=longest:normalize=0,alimiter=limit=0.95[out]'
+# `record mute`: ikke noe mikrofonspor – normaliser systemsporet alene.
+if [[ -f "${sysonly_flag}" ]] &amp;&amp; /opt/homebrew/bin/ffmpeg -y -v error -i "${sys_part}" -af 'loudnorm=I=-18:TP=-2:LRA=11,alimiter=limit=0.95' -ar 44100 -ac 2 -c:a pcm_s16le "${outfile}" 2&gt;&gt; "${mix_log}"; then
+  rm -f "${sys_part}" "${mic_part}"
+  readonly what="bare systemlyd – mute"
+elif [[ -s "${mic_part}" ]] &amp;&amp; /opt/homebrew/bin/ffmpeg -y -v error -i "${sys_part}" -i "${mic_part}" -filter_complex "${mix_filter}" -map '[out]' -ar 44100 -ac 2 -c:a pcm_s16le "${outfile}" 2&gt;&gt; "${mix_log}"; then
   rm -f "${sys_part}" "${mic_part}"
   readonly what="systemlyd + mikrofon"
+elif [[ -s "${mic_part}" ]] &amp;&amp; /opt/homebrew/bin/sox -m "${sys_part}" "|/opt/homebrew/bin/sox \"${mic_part}\" -p channels 2" "${outfile}" gain -n -1 2&gt;&gt; "${mix_log}"; then
+  rm -f "${sys_part}" "${mic_part}"
+  readonly what="systemlyd + mikrofon (enkel miks – ffmpeg feilet, se mix.log)"
 elif mv "${sys_part}" "${outfile}" 2&gt;&gt; "${mix_log}"; then
   readonly what="bare systemlyd – miks feilet, se mix.log"
 else
@@ -616,6 +688,7 @@ else
   exit 1
 fi
 
+rm -f "${sysonly_flag}"
 readonly secs="$(/opt/homebrew/bin/ffprobe -v error -show_entries format=duration -of csv=p=0 "${outfile}" 2&gt;/dev/null | cut -d. -f1)"
 osascript -e "display notification \"${base} (${secs:-?} s, ${what})\" with title \"Opptak lagret\""
 </string>
@@ -692,10 +765,18 @@ base="\${src:t:r}"
 wav16="${workdir}/\${base}-16k.wav"
 outbase="${HOME}/Downloads/\${base}"
 
+wav16p="${workdir}/\${base}-16k-prep.wav"
+vad_model="${HOME}/.whisper-models/ggml-silero-v5.1.2.bin"
+
 /opt/homebrew/bin/ffmpeg -y -i "\${src}" -ar 16000 -ac 1 "\${wav16}"
-/opt/homebrew/bin/whisper-cli -m "\${model}" -f "\${wav16}" -l "\${lang}" -otxt -of "\${outbase}"
+# Forbehandling (høypass 80 Hz, kompresjon som løfter lav tale, normalisering) + VAD (silero)
+# ga 75 % mer tekst på et dårlig Teams-opptak 2026-10-21. Mangler VAD-modellen, kjøres uten.
+/opt/homebrew/bin/sox "\${wav16}" "\${wav16p}" highpass 80 compand 0.02,0.2 -60,-60,-40,-20,-20,-8,0,-3 -3 0 0.1 norm -3 || cp "\${wav16}" "\${wav16p}"
+vad=()
+[[ -f "\${vad_model}" ]] &amp;&amp; vad=(--vad -vm "\${vad_model}" -vt 0.4)
+/opt/homebrew/bin/whisper-cli -m "\${model}" -f "\${wav16p}" -l "\${lang}" "\${vad[@]}" -otxt -of "\${outbase}"
 rc=\$?
-rm -f "\${wav16}" "${pid_file}"
+rm -f "\${wav16}" "\${wav16p}" "${pid_file}"
 if [[ \$rc -eq 0 ]]; then
   osascript -e "display notification \"\${base}.txt\" with title \"Transkribering ferdig (\${lang})\""
 else
@@ -800,10 +881,18 @@ base="\${src:t:r}"
 wav16="${workdir}/\${base}-16k.wav"
 outbase="${HOME}/Downloads/\${base}"
 
+wav16p="${workdir}/\${base}-16k-prep.wav"
+vad_model="${HOME}/.whisper-models/ggml-silero-v5.1.2.bin"
+
 /opt/homebrew/bin/ffmpeg -y -i "\${src}" -ar 16000 -ac 1 "\${wav16}"
-/opt/homebrew/bin/whisper-cli -m "\${model}" -f "\${wav16}" -l "\${lang}" -otxt -of "\${outbase}"
+# Forbehandling (høypass 80 Hz, kompresjon som løfter lav tale, normalisering) + VAD (silero)
+# ga 75 % mer tekst på et dårlig Teams-opptak 2026-10-21. Mangler VAD-modellen, kjøres uten.
+/opt/homebrew/bin/sox "\${wav16}" "\${wav16p}" highpass 80 compand 0.02,0.2 -60,-60,-40,-20,-20,-8,0,-3 -3 0 0.1 norm -3 || cp "\${wav16}" "\${wav16p}"
+vad=()
+[[ -f "\${vad_model}" ]] &amp;&amp; vad=(--vad -vm "\${vad_model}" -vt 0.4)
+/opt/homebrew/bin/whisper-cli -m "\${model}" -f "\${wav16p}" -l "\${lang}" "\${vad[@]}" -otxt -of "\${outbase}"
 rc=\$?
-rm -f "\${wav16}" "${pid_file}"
+rm -f "\${wav16}" "\${wav16p}" "${pid_file}"
 if [[ \$rc -eq 0 ]]; then
   osascript -e "display notification \"\${base}.txt\" with title \"Transkribering ferdig (\${lang})\""
 else
@@ -980,6 +1069,63 @@ osascript -e "display notification \"$(basename "${src}")\" with title \"Transkr
 			<key>version</key>
 			<integer>1</integer>
 		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>alfredfiltersresults</key>
+				<true/>
+				<key>alfredfiltersresultsmatchmode</key>
+				<integer>0</integer>
+				<key>argumenttreatemptyqueryasnil</key>
+				<true/>
+				<key>argumenttrimmode</key>
+				<integer>0</integer>
+				<key>argumenttype</key>
+				<integer>1</integer>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>keyword</key>
+				<string>rec</string>
+				<key>queuedelaycustom</key>
+				<integer>1</integer>
+				<key>queuedelayimmediatelyinitially</key>
+				<true/>
+				<key>queuedelaymode</key>
+				<integer>0</integer>
+				<key>queuemode</key>
+				<integer>1</integer>
+				<key>runningsubtext</key>
+				<string></string>
+				<key>script</key>
+				<string>cat &lt;&lt;'JSON'
+{"items": [
+  {"title": "Start opptak: systemlyd + mikrofon", "subtitle": "BlackHole (Teams) + din mikrofon, mikset ved stopp · «stoprecording» stopper", "arg": "", "match": "opptak standard begge"},
+  {"title": "Start opptak: bare systemlyd (mute)", "subtitle": "Bare BlackHole (Teams) – når din egen mikrofon er av · «stoprecording» stopper", "arg": "mute", "match": "mute mutet muted sys system teams blackhole bare"}
+]}
+JSON
+</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>skipuniversalaction</key>
+				<true/>
+				<key>subtext</key>
+				<string>Velg: systemlyd + mikrofon, eller bare systemlyd (mute)</string>
+				<key>title</key>
+				<string>Start opptak (BlackHole)</string>
+				<key>type</key>
+				<integer>11</integer>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.scriptfilter</string>
+			<key>uid</key>
+			<string>FAAE31A2-994C-4D63-92EF-F3AE5EE676BE</string>
+			<key>version</key>
+			<integer>3</integer>
+		</dict>
 	</array>
 	<key>readme</key>
 	<string>Krever switchaudio-osx (brew install switchaudio-osx), sox og Multi-Output-enheter satt opp i Audio MIDI Setup ('Hodetelefoner+BlackHole', 'MacBook+BlackHole', 'Jack+BlackHole'), alle med BlackHole 2ch inkludert. Opptak tar opp BlackHole (systemlyd) og standard mikrofon i to sox-jobber under launchd og mikser dem ved stopp.</string>
@@ -1145,6 +1291,13 @@ osascript -e "display notification \"$(basename "${src}")\" with title \"Transkr
 			<real>200.0</real>
 			<key>ypos</key>
 			<real>800.0</real>
+		</dict>
+		<key>FAAE31A2-994C-4D63-92EF-F3AE5EE676BE</key>
+		<dict>
+			<key>xpos</key>
+			<real>200.0</real>
+			<key>ypos</key>
+			<real>920.0</real>
 		</dict>
 	</dict>
 	<key>userconfigurationconfig</key>
