@@ -18,15 +18,23 @@ Obs). Store-less items land above the first `###`; a missing store heading is
 created at the end of the Handleliste section. A trailing number is a quantity:
 `Laktosefri melk 2` (or `x2`, `2x`, `2 stk`) becomes `Laktosefri melk x2`.
 Comma-separated input (`melk 2, brød, egg 12`) becomes one item per part.
+URLs in either mode become markdown links. The label comes from, in order:
+quoted text before the URL (`sjekk ut "Argus" https://x` → `sjekk ut
+[Argus](https://x)`); the words before the URL minus a leading phrase from
+LEAD_PHRASES (`sjekk ut Argus https://x` → the same; `kult verktøy https://x`
+→ `[kult verktøy](https://x)`); otherwise `owner/repo` for GitHub or the page
+`<title>` (3 s timeout), falling back to host and path.
 
 The target file comes from the `note_path` env var, set per action in
 info.plist from the user-configuration variables (innboks_path, handel_path).
 """
 import datetime
+import html
 import os
 import re
 import subprocess
 import sys
+import urllib.request
 
 DEFAULT_NOTE = (
     "/Users/simonetnan/Documents/Koderiet/RSA/md/SE-v2/+/Innboks.md"
@@ -225,6 +233,93 @@ def insert_shopping(content, store, item):
     return "\n".join(lines) + "\n"
 
 
+URL_RE = re.compile(r"https?://[^\s<>()\[\]]+")
+TITLE_RE = re.compile(r"<title[^>]*>(.*?)</title>", re.IGNORECASE | re.DOTALL)
+TRAILING_PUNCT = ".,;:!?'\""
+
+
+def fetch_title(url, timeout=3):
+    try:
+        req = urllib.request.Request(
+            url, headers={"User-Agent": "Mozilla/5.0 (Macintosh) AlfredInnboks/1.0"}
+        )
+        with urllib.request.urlopen(req, timeout=timeout) as r:
+            if "html" not in (r.headers.get("Content-Type") or ""):
+                return None
+            raw = r.read(200_000)
+        m = TITLE_RE.search(raw.decode("utf-8", "replace"))
+        if not m:
+            return None
+        title = html.unescape(re.sub(r"\s+", " ", m.group(1))).strip()
+        return title or None
+    except Exception:
+        return None
+
+
+def link_label(url):
+    """Short label for a URL: `owner/repo` for GitHub, else page title or host/path."""
+    m = re.match(r"https?://(?:www\.)?github\.com/([^/?#]+)/([^/?#]+)", url)
+    if m:
+        return f"{m.group(1)}/{m.group(2)}"
+    title = fetch_title(url)
+    if title:
+        return title[:80]
+    bare = re.sub(r"^https?://(?:www\.)?", "", url).rstrip("/")
+    return bare[:80]
+
+
+# Phrases that stay as plain text in front of a link instead of becoming
+# its label: `sjekk ut Argus https://…` → `sjekk ut [Argus](https://…)`.
+LEAD_PHRASES = (
+    "sjekk ut", "sjekk", "les", "se på", "se", "test", "prøv", "husk",
+    "og", "samt", "eller",
+)
+QUOTED_RE = re.compile(r'"([^"]+)"|“([^”]+)”|«([^»]+)»')
+
+
+def label_from_segment(segment):
+    """(label or None, text to keep before the link) for the text that
+    precedes a URL."""
+    seg = segment.strip()
+    q = QUOTED_RE.search(seg)
+    if q:
+        label = next(g for g in q.groups() if g is not None).strip()
+        keep = (seg[: q.start()] + " " + seg[q.end() :]).strip()
+        return (label or None), keep
+    low = seg.lower()
+    for ph in sorted(LEAD_PHRASES, key=len, reverse=True):
+        if low == ph:
+            return None, seg
+        if low.startswith(ph + " "):
+            rest = seg[len(ph) + 1 :].strip()
+            return (rest or None), seg[: len(ph)]
+    return (seg or None), ""
+
+
+def linkify(text):
+    """Replace bare URLs in `text` with `[label](url)` markdown links, taking
+    the label from the preceding text when it provides one."""
+    out = []
+    pos = 0
+    for m in URL_RE.finditer(text):
+        url = m.group(0)
+        trail = ""
+        while url and url[-1] in TRAILING_PUNCT:
+            trail = url[-1] + trail
+            url = url[:-1]
+        label, keep = label_from_segment(text[pos : m.start()])
+        if label is None:
+            label = link_label(url)
+        label = label.replace("]", "\\]")
+        lead = ("" if pos == 0 else " ") + keep + (" " if keep else "")
+        if pos == 0 and not keep:
+            lead = ""
+        out.append(f"{lead}[{label}]({url}){trail}")
+        pos = m.end()
+    out.append(text[pos:])
+    return "".join(out).strip()
+
+
 def append_at_end(content, item):
     lines = content.split("\n")
     while lines and lines[-1].strip() == "":
@@ -296,11 +391,11 @@ def main():
     # Comma-separated input becomes one checklist item per part.
     content = load(path)
     if section:
-        pairs = [(section, t.strip()) for t in text.split(",") if t.strip()]
+        pairs = [(section, linkify(t.strip())) for t in text.split(",") if t.strip()]
         for sec, t in pairs:
             content = insert_item(content, sec, f"- [ ] {t}")
     else:  # shopping mode: store keywords → ### sub-heading, trailing number = qty
-        pairs = shopping_items(text)
+        pairs = [(store, linkify(t)) for store, t in shopping_items(text)]
         for store, t in pairs:
             content = insert_shopping(content, store, f"- [ ] {t}")
         pairs = [(store or SHOP_SECTION, t) for store, t in pairs]
