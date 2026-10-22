@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Bootstrap for utviklingsserveren «etnandev-dev» (Ubuntu 24.04, Gigahost). Idempotent.
+# Bootstrap for utviklingsserveren «etnan-lab» (Ubuntu 24.04, Gigahost). Idempotent.
 #
 #   Som root, første gang:   curl -fsSL <rå-url til denne fila> | bash -s -- root
 #   Som dev, etterpå:        ~/bootstrap-dev.sh dev
@@ -19,7 +19,7 @@ DOTFILES_RAW="${DOTFILES_RAW:-https://raw.githubusercontent.com/setnan/dotfiles/
 
 root_part() {
   [[ $EUID -eq 0 ]] || { echo "kjør root-delen som root" >&2; exit 1; }
-  hostnamectl set-hostname etnandev-dev
+  hostnamectl set-hostname etnan-lab
   timedatectl set-timezone Europe/Oslo
   export DEBIAN_FRONTEND=noninteractive
   apt-get update && apt-get upgrade -y
@@ -66,7 +66,7 @@ root_part() {
 
 root-delen ferdig. Nå:
   1. tailscale up            (logg inn, slå av key expiry i admin-panelet)
-  2. Sjekk at du kommer inn over tailnettet: ssh $DEV_USER@etnandev-dev
+  2. Sjekk at du kommer inn over tailnettet: ssh $DEV_USER@etnan-lab
   3. Som $DEV_USER: ~/bootstrap-dev.sh dev
 MSG
 }
@@ -96,7 +96,7 @@ dir=$HOME/src
 name=EtnanDev
 capacity=8
 CONF
-  [[ -f ~/.ssh/id_ed25519 ]] || ssh-keygen -t ed25519 -N "" -C "etnandev-dev" -f ~/.ssh/id_ed25519
+  [[ -f ~/.ssh/id_ed25519 ]] || ssh-keygen -t ed25519 -N "" -C "etnan-lab" -f ~/.ssh/id_ed25519
 
   systemctl --user daemon-reload
   cat <<MSG
