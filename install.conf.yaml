@@ -23,3 +23,6 @@
     ~/.config/micro/settings.json: micro/settings.json
     ~/.config/micro/bindings.json: micro/bindings.json
     ~/.config/zed/settings.json: zed/settings.json
+    ~/.tmux.conf: tmux.conf
+    ~/bin: bin
+    ~/Library/LaunchAgents/dev.etnan.claude-rc.plist: launchd/dev.etnan.claude-rc.plist

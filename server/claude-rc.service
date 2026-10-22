@@ -1,0 +1,17 @@
+# systemd --user-enhet for utviklingsserveren. Legges i ~/.config/systemd/user/ av
+# bootstrap-dev.sh. Krever `loginctl enable-linger <bruker>` så den kjører uten innlogging.
+# Selve restart-logikken ligger i claude-rc-loop.sh inne i tmux; denne enheten sørger bare for
+# at tmux-økten finnes etter oppstart.
+[Unit]
+Description=Claude Code Remote Control i tmux
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=%h/bin/claude-rc-start.sh
+ExecStop=/usr/bin/tmux kill-session -t rc
+
+[Install]
+WantedBy=default.target

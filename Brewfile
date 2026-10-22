@@ -36,3 +36,7 @@ brew "switchaudio-osx"  # SwitchAudioSource – bytter lydutgang
 brew "sox"              # opptaker (CoreAudio direkte; ffmpeg/avfoundation mister samples)
 brew "ffmpeg"           # 16 kHz-konvertering før whisper
 brew "whisper.cpp"      # whisper-cli, modeller i ~/.whisper-models
+
+# Claude Code Remote Control fra mobilen: tmux holder serveren, mosh for Blink Shell over Tailscale
+brew "tmux"
+brew "mosh"
