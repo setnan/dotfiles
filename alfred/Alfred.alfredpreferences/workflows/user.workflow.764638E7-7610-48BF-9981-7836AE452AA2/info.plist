@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>bundleid</key>
+	<string>no.etnan.stats</string>
+	<key>category</key>
+	<string>Tools</string>
+	<key>connections</key>
+	<dict>
+		<key>764638E7-7610-48BF-9981-7836AE452A01</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>764638E7-7610-48BF-9981-7836AE452A02</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>764638E7-7610-48BF-9981-7836AE452A02</key>
+		<array/>
+	</dict>
+	<key>createdby</key>
+	<string>Simon Etnan</string>
+	<key>description</key>
+	<string>Maskinstatus: disk, minne, CPU, prosesser, strøm, nett og mobil-riggen</string>
+	<key>disabled</key>
+	<false/>
+	<key>name</key>
+	<string>Stats</string>
+	<key>objects</key>
+	<array>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>alfredfiltersresults</key>
+				<true/>
+				<key>alfredfiltersresultsmatchmode</key>
+				<integer>0</integer>
+				<key>argumenttreatemptyqueryasnil</key>
+				<true/>
+				<key>argumenttrimmode</key>
+				<integer>0</integer>
+				<key>argumenttype</key>
+				<integer>1</integer>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>keyword</key>
+				<string>stats</string>
+				<key>queuedelaycustom</key>
+				<integer>1</integer>
+				<key>queuedelayimmediatelyinitially</key>
+				<true/>
+				<key>queuedelaymode</key>
+				<integer>0</integer>
+				<key>queuemode</key>
+				<integer>1</integer>
+				<key>runningsubtext</key>
+				<string>Måler …</string>
+				<key>script</key>
+				<string>/usr/bin/python3 stats.py list "$1"</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>skipuniversalaction</key>
+				<true/>
+				<key>subtext</key>
+				<string>Disk, minne, CPU, prosesser, strøm, nett og rigg</string>
+				<key>title</key>
+				<string>Stats</string>
+				<key>type</key>
+				<integer>11</integer>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.scriptfilter</string>
+			<key>uid</key>
+			<string>764638E7-7610-48BF-9981-7836AE452A01</string>
+			<key>version</key>
+			<integer>3</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>script</key>
+				<string>/usr/bin/python3 stats.py "$1"</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>type</key>
+				<integer>11</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>764638E7-7610-48BF-9981-7836AE452A02</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+	</array>
+	<key>readme</key>
+	<string>stats [filter]
+
+Viser maskinstatus som oppdaterer seg hvert 2. sekund mens Alfred er åpent:
+CPU, minne og minnetrykk (swap), ledig disk (intern + eksterne), de tre prosessene
+som bruker mest minne og mest CPU, batteri/Lungo, LAN- og Tailscale-IP, og mobil-riggen
+(Remote Control i tmux, mosh-tilkoblinger, Claude-prosesser).
+
+Skriv videre for å filtrere, f.eks. «stats disk» eller «stats minne».
+- Enter: åpner Aktivitetsmonitor / Lagring / Batteri, eller kopierer Tailscale-IP.
+- ⌘Enter på disk: Diskverktøy.
+- ⌥Enter på en prosess: avslutter den (kill).
+- ⌘C kopierer linja, ⌘L viser den i stor tekst.</string>
+	<key>uidata</key>
+	<dict>
+		<key>764638E7-7610-48BF-9981-7836AE452A01</key>
+		<dict>
+			<key>xpos</key>
+			<integer>30</integer>
+			<key>ypos</key>
+			<integer>30</integer>
+		</dict>
+		<key>764638E7-7610-48BF-9981-7836AE452A02</key>
+		<dict>
+			<key>xpos</key>
+			<integer>300</integer>
+			<key>ypos</key>
+			<integer>30</integer>
+		</dict>
+	</dict>
+	<key>userconfigurationconfig</key>
+	<array/>
+	<key>variablesdontexport</key>
+	<array/>
+	<key>version</key>
+	<string>1.0</string>
+	<key>webaddress</key>
+	<string></string>
+</dict>
+</plist>
