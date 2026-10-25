@@ -16,6 +16,7 @@ brew "micro"
 
 # Apps
 cask "alfred"
+cask "ghostty@tip"     # tip til 1.4 er ute: stabil 1.3.1 ødelegger tabs i tittellinjen på macOS 27 – bytt til "ghostty" da
 
 # Dev
 brew "gh"
