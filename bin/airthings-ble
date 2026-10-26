@@ -4,7 +4,8 @@
 # dependencies = ["bleak>=0.22"]
 # ///
 """Leser nåverdier fra en Airthings Wave Plus over Bluetooth og lagrer dem
-for Alfred-workflowen (`air`). Kjøres hvert 5. minutt av
+for Alfred-workflowen (`air`), og legger hver måling til i ble-history.csv
+som luftrapporten bruker etter siste synk til skyen. Kjøres hvert 5. minutt av
 launchd/dev.etnan.airthings-ble.plist; gjør ingenting når sensoren er utenfor
 rekkevidde.
 
@@ -23,8 +24,10 @@ from bleak import BleakClient, BleakScanner
 
 AIRTHINGS_ID = 0x0334  # produsent-ID i Bluetooth-annonseringen
 CURRENT_VALUES = "b42e2a68-ade7-11e4-89d3-123b93f75cba"
-OUT = os.path.expanduser(
-    "~/Library/Caches/com.runningwithcrayons.Alfred/Workflow Data/no.etnan.airthings/ble.json")
+DATA_DIR = os.path.expanduser("~/Library/Caches/com.runningwithcrayons.Alfred/Workflow Data/no.etnan.airthings")
+OUT = os.path.join(DATA_DIR, "ble.json")
+HISTORY = os.path.join(DATA_DIR, "ble-history.csv")
+COLUMNS = ["co2", "voc", "temp", "humidity", "pressure", "radonShortTermAvg"]
 
 
 async def read():
@@ -67,11 +70,16 @@ def main():
     if "--print" in sys.argv:
         print(json.dumps(data, indent=2))
         return 0
-    os.makedirs(os.path.dirname(OUT), exist_ok=True)
+    os.makedirs(DATA_DIR, exist_ok=True)
     tmp = OUT + ".tmp"
     with open(tmp, "w") as f:
         json.dump(data, f)
     os.replace(tmp, OUT)
+    new = not os.path.exists(HISTORY)
+    with open(HISTORY, "a") as f:
+        if new:
+            f.write(",".join(["time"] + COLUMNS) + "\n")
+        f.write(",".join([now] + [str(values.get(c, "")) for c in COLUMNS]) + "\n")
     return 0
 
 

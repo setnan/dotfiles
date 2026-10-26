@@ -8,19 +8,21 @@ siste synk fra telefonen, så når bin/airthings-ble (launchd) har lest
 sensoren over Bluetooth de siste 15 minuttene, brukes de tallene i stedet.
 `air !` ber jobben lese med en gang.
 
-    python3 airthings.py [filter]   Alfred-JSON
+    python3 airthings.py [filter]   Alfred-JSON («7», «uke», «1.10-15.10» gir luftrapport)
+    python3 airthings.py --report [tidsrom]   bare rapportvalg (nøkkelordet luftrapport)
     python3 airthings.py --raw      rå API-svar (feilsøking)
 """
 
 import base64
 import json
 import os
+import re
 import subprocess
 import sys
 import time
 import urllib.error
 import urllib.request
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 TOKEN_URL = "https://accounts-api.airthings.com/v1/token"
 API = "https://consumer-api.airthings.com/v1"
@@ -279,8 +281,66 @@ def device_names(devices):
     return names
 
 
-def items(query):
+PERIOD_WORDS = {"dag": 1, "døgn": 1, "uke": 7, "måned": 30, "mnd": 30, "kvartal": 90, "år": 365}
+DATE = r"(\d{1,2})\.(\d{1,2})(?:\.(\d{2,4}))?"
+
+
+def parse_period(q):
+    """«7», «30 dager», «uke», «1.10-15.10» -> (start, slutt, beskrivelse) eller None."""
+    now = datetime.now().astimezone().replace(second=0, microsecond=0)
+    m = re.fullmatch(r"(\d{1,4})\s*(d|dag|dager|døgn)?", q)
+    if m or q in PERIOD_WORDS:
+        n = int(m.group(1)) if m else PERIOD_WORDS[q]
+        return now - timedelta(days=n), now, ("siste døgn" if n == 1 else f"siste {n} dager")
+    m = re.fullmatch(DATE + r"\s*[-–]\s*" + DATE, q)
+    if m:
+        def day(d, mo, y):
+            y = int(y) + (2000 if y and len(y) == 2 else 0) if y else now.year
+            return datetime(y, int(mo), int(d)).astimezone()
+        try:
+            a, b = day(*m.groups()[:3]), day(*m.groups()[3:])
+        except ValueError:
+            return None
+        if a > now:
+            a = a.replace(year=a.year - 1)
+        b = min(b + timedelta(days=1), now)
+        return (a, b, f"{a:%d.%m.%Y} – {(b - timedelta(minutes=1)):%d.%m.%Y}") if a < b else None
+    return None
+
+
+def report_items(q):
+    period = parse_period(q)
+    if not period:
+        return []
+    start, end, label = period
+    return [{
+        "title": f"Lag luftrapport: {label}",
+        "subtitle": f"{start:%d.%m %H:%M} – {end:%d.%m %H:%M} · PDF med sammendrag og grafer, lagres i Nedlastinger",
+        "icon": {"path": "icon.png"},
+        "arg": "report",
+        "variables": {"action": "report", "start": start.isoformat(), "end": end.isoformat()},
+        "mods": {"cmd": {"valid": False, "subtitle": "Enter lager rapporten"},
+                 "shift": {"valid": False, "subtitle": "Historikk fra skyen, fylt inn med Bluetooth-målinger etter siste synk"}},
+    }]
+
+
+def report_suggestions():
+    out = []
+    for q in ("1", "7", "30", "90"):
+        item = report_items(q)[0]
+        item["autocomplete"] = q
+        out.append(item)
+    out.append({"title": "Eget tidsrom: f.eks. 1.10-15.10", "subtitle": "Skriv fra- og til-dato (begge dager tas med)",
+                "valid": False, "autocomplete": "1.10-15.10"})
+    return out
+
+
+def items(query, report_only=False):
     q = query.strip().lower()
+    if report_only:
+        return (report_items(q) or report_suggestions()), False
+    if parse_period(q):
+        return report_items(q), False
     force = q.startswith("!")
     q = q.lstrip("!").strip()
     want = SEARCH.get(q, ALIASES.get(q)) if q else None
@@ -361,7 +421,8 @@ if __name__ == "__main__":
         sys.exit()
     rerun = False
     try:
-        result, rerun = items(sys.argv[1] if len(sys.argv) > 1 else "")
+        args = [x for x in sys.argv[1:] if x != "--report"]
+        result, rerun = items(args[0] if args else "", report_only="--report" in sys.argv)
     except AirthingsError as e:
         result = [{"title": "Airthings: " + str(e), "subtitle": "Enter åpner dashboardet", "arg": DASHBOARD}]
     except Exception as e:
