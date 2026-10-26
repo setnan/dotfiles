@@ -26,3 +26,4 @@
     ~/.tmux.conf: tmux.conf
     ~/bin: bin
     ~/Library/LaunchAgents/dev.etnan.claude-rc.plist: launchd/dev.etnan.claude-rc.plist
+    ~/Library/LaunchAgents/dev.etnan.airthings-ble.plist: launchd/dev.etnan.airthings-ble.plist

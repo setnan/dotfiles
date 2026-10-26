@@ -1,0 +1,79 @@
+#!/usr/bin/env -S "${HOME}/.local/bin/uv" run --quiet --script
+# /// script
+# requires-python = ">=3.11"
+# dependencies = ["bleak>=0.22"]
+# ///
+"""Leser nåverdier fra en Airthings Wave Plus over Bluetooth og lagrer dem
+for Alfred-workflowen (`air`). Kjøres hvert 5. minutt av
+launchd/dev.etnan.airthings-ble.plist; gjør ingenting når sensoren er utenfor
+rekkevidde.
+
+    airthings-ble          les og lagre
+    airthings-ble --print  les og skriv ut, uten å lagre
+"""
+
+import asyncio
+import json
+import os
+import struct
+import sys
+from datetime import datetime, timezone
+
+from bleak import BleakClient, BleakScanner
+
+AIRTHINGS_ID = 0x0334  # produsent-ID i Bluetooth-annonseringen
+CURRENT_VALUES = "b42e2a68-ade7-11e4-89d3-123b93f75cba"
+OUT = os.path.expanduser(
+    "~/Library/Caches/com.runningwithcrayons.Alfred/Workflow Data/no.etnan.airthings/ble.json")
+
+
+async def read():
+    found = await BleakScanner.find_device_by_filter(
+        lambda d, adv: AIRTHINGS_ID in adv.manufacturer_data, timeout=15)
+    if not found:
+        return None
+    async with BleakClient(found, timeout=20) as client:
+        raw = await client.read_gatt_char(CURRENT_VALUES)
+    v = struct.unpack("<BBBBHHHHHHHH", raw[:20])
+    if v[0] != 1:
+        raise RuntimeError(f"ukjent dataversjon {v[0]}")
+
+    def radon(x):
+        return x if 0 <= x <= 16383 else None  # 0xFFFF = ikke klar ennå
+
+    values = {
+        "humidity": v[1] / 2,
+        "radonShortTermAvg": radon(v[4]),
+        "radonLongTermAvg": radon(v[5]),
+        "temp": v[6] / 100,
+        "pressure": v[7] / 50,
+        "co2": v[8],
+        "voc": v[9],
+    }
+    return {k: x for k, x in values.items() if x is not None}
+
+
+def main():
+    try:
+        values = asyncio.run(read())
+    except Exception as e:  # utenfor rekkevidde, opptatt (appen er koblet til) o.l.
+        print(f"airthings-ble: {type(e).__name__}: {e}", file=sys.stderr)
+        return 1
+    if values is None:
+        print("airthings-ble: fant ingen Wave Plus i nærheten", file=sys.stderr)
+        return 0
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
+    data = {"recorded": now, "values": values}
+    if "--print" in sys.argv:
+        print(json.dumps(data, indent=2))
+        return 0
+    os.makedirs(os.path.dirname(OUT), exist_ok=True)
+    tmp = OUT + ".tmp"
+    with open(tmp, "w") as f:
+        json.dump(data, f)
+    os.replace(tmp, OUT)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
