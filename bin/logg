@@ -1,0 +1,261 @@
+#!/usr/bin/env python3
+"""Arbeidslogg for Claude-økter i ~/Logs, sortert i kategorier per prosjekt.
+
+  logg kategori [mappe]       hvilken kategori en mappe hører til
+  logg ny "tittel" [mappe]    lager en ny loggfil med frontmatter, skriver stien
+  logg siste [filter] [-n N]  nyeste oppføringer, valgfritt filtrert på kategori
+  logg søk ord ...            søker i alle oppføringer (ripgrep)
+  logg hook                   SessionEnd-hook for Claude Code: skriver logg selv
+                              hvis økten endret filer uten å logge
+
+Kobling mappe → kategori står i ~/Logs/prosjekter.yaml (mappe: Kategori/Under).
+"""
+import datetime as dt
+import json
+import os
+import re
+import subprocess
+import sys
+from pathlib import Path
+
+LOGS = Path(os.environ.get('LOGG_DIR', Path.home() / 'Logs'))
+MAP = LOGS / 'prosjekter.yaml'
+HOOK_LOG = Path.home() / 'Library/Logs/logg-hook.log'
+EDIT_TOOLS = {'Edit', 'Write', 'NotebookEdit', 'MultiEdit'}
+
+
+def kategori(mappe):
+    mappe = Path(mappe).expanduser().resolve()
+    best, kat = -1, None
+    if MAP.exists():
+        for line in MAP.read_text().splitlines():
+            line = line.split('#', 1)[0].strip()
+            if ':' not in line:
+                continue
+            sti, k = (s.strip() for s in line.split(':', 1))
+            p = Path(sti).expanduser()
+            if (mappe == p or p in mappe.parents) and len(str(p)) > best:
+                best, kat = len(str(p)), k
+    return kat or f'Annet/{mappe.name}'
+
+
+def slug(tekst):
+    tekst = tekst.lower().translate(str.maketrans({'æ': 'ae', 'ø': 'o', 'å': 'a'}))
+    return re.sub(r'[^a-z0-9]+', '-', tekst).strip('-')[:60] or 'okt'
+
+
+def git(mappe, *args):
+    r = subprocess.run(['git', '-C', str(mappe), *args], capture_output=True, text=True)
+    return r.stdout.strip() if r.returncode == 0 else ''
+
+
+def frontmatter(mappe, tittel, okt='', filer=(), generert=False):
+    mappe = Path(mappe).expanduser().resolve()
+    top = git(mappe, 'rev-parse', '--show-toplevel')
+    commits = git(mappe, 'log', '--since=12 hours ago', '--format=%h') if top else ''
+    felt = {
+        'tittel': tittel,
+        'dato': dt.datetime.now().strftime('%Y-%m-%dT%H:%M'),
+        'prosjekt': kategori(mappe),
+        'mappe': str(mappe).replace(str(Path.home()), '~'),
+        'repo': Path(top).name if top else '',
+        'branch': git(mappe, 'branch', '--show-current') if top else '',
+        'commits': '[' + ', '.join(commits.split()) + ']',
+        'filer': '[' + ', '.join(sorted(f.replace(str(Path.home()), '~') for f in filer)) + ']',
+        'tags': '[auto]' if generert else '[]',
+        'status': 'ferdig',
+        'økt': okt,
+    }
+    return '---\n' + ''.join(f'{k}: {v}\n' for k, v in felt.items()) + '---\n'
+
+
+def ny_fil(mappe, tittel):
+    now = dt.datetime.now()
+    d = LOGS / kategori(mappe) / f'{now:%Y}'
+    d.mkdir(parents=True, exist_ok=True)
+    f = d / f'{now:%Y-%m-%d-%H%M}-{slug(tittel)}.md'
+    i = 2
+    while f.exists():
+        f = d / f'{now:%Y-%m-%d-%H%M}-{slug(tittel)}-{i}.md'
+        i += 1
+    return f
+
+
+MAL = """
+## Mål
+
+## Gjort
+
+## Beslutninger
+
+## Problemer
+
+## Gjenstår
+
+## Teste
+"""
+
+
+def cmd_ny(args):
+    if not args:
+        sys.exit('bruk: logg ny "tittel" [mappe]')
+    mappe = args[1] if len(args) > 1 else os.getcwd()
+    f = ny_fil(mappe, args[0])
+    f.write_text(frontmatter(mappe, args[0], os.environ.get('CLAUDE_CODE_SESSION_ID', '')) + MAL)
+    print(f)
+
+
+def oppforinger():
+    return sorted((p for p in LOGS.rglob('*.md') if p.name != 'README.md'),
+                  key=lambda p: p.name, reverse=True)
+
+
+def les_felt(p, navn):
+    m = re.search(rf'^{navn}: (.*)$', p.read_text(errors='replace'), re.M)
+    return m.group(1).strip() if m else ''
+
+
+def cmd_siste(args):
+    n = 10
+    if '-n' in args:
+        i = args.index('-n'); n = int(args[i + 1]); del args[i:i + 2]
+    filt = ' '.join(args).lower()
+    vist = 0
+    for p in oppforinger():
+        rel = str(p.relative_to(LOGS))
+        if filt and filt not in rel.lower():
+            continue
+        print(f'{p.name[:15]}  {rel.rsplit("/", 2)[0]:32}  {les_felt(p, "tittel")}')
+        print(f'                 {p}')
+        vist += 1
+        if vist >= n:
+            break
+
+
+def cmd_sok(args):
+    if not args:
+        sys.exit('bruk: logg søk ord ...')
+    rg = ['rg', '-i', '-C', '1']
+    filer = None  # alle ordene må finnes i fila
+    for ord_ in args:
+        r = subprocess.run(['rg', '-il', '-g', '*.md', ord_, str(LOGS)], capture_output=True, text=True)
+        treff = set(r.stdout.split('\n')) - {''}
+        filer = treff if filer is None else filer & treff
+    for f in sorted(filer or [], reverse=True):
+        p = Path(f)
+        print(f'\n== {p.relative_to(LOGS)}  ({les_felt(p, "tittel")})')
+        subprocess.run(rg + [args[0], f])
+
+
+# --- hook -------------------------------------------------------------------
+
+def hook_log(msg):
+    HOOK_LOG.parent.mkdir(parents=True, exist_ok=True)
+    with HOOK_LOG.open('a') as fh:
+        fh.write(f'{dt.datetime.now():%Y-%m-%d %H:%M:%S} {msg}\n')
+
+
+def les_okt(transcript):
+    """Kort versjon av økten: brukerens meldinger, Claudes tekst og verktøybruk."""
+    linjer, filer, committet = [], set(), False
+    for l in Path(transcript).read_text(errors='replace').splitlines():
+        try:
+            d = json.loads(l)
+        except ValueError:
+            continue
+        if d.get('isSidechain'):
+            continue
+        innhold = (d.get('message') or {}).get('content')
+        if d.get('type') == 'user':
+            if isinstance(innhold, str) and not innhold.startswith('<'):
+                linjer.append(f'BRUKER: {innhold[:2000]}')
+        elif d.get('type') == 'assistant' and isinstance(innhold, list):
+            for c in innhold:
+                if c.get('type') == 'text' and c['text'].strip():
+                    linjer.append(f'CLAUDE: {c["text"][:1500]}')
+                elif c.get('type') == 'tool_use':
+                    inp = c.get('input') or {}
+                    if c['name'] in EDIT_TOOLS:
+                        fp = inp.get('file_path') or inp.get('notebook_path') or ''
+                        filer.add(fp)
+                        linjer.append(f'[{c["name"]} {fp}]')
+                    elif c['name'] == 'Bash':
+                        kom = inp.get('command', '')
+                        committet |= bool(re.search(r'\bgit\b.*\bcommit\b|\bgcmsg\b', kom))
+                        linjer.append(f'[Bash: {kom[:200]}]')
+    return linjer, filer, committet
+
+
+PROMPT = """Du skriver en loggoppføring på norsk for en Claude Code-økt, slik at en senere
+økt kan søke opp hva som ble gjort. Under er et utdrag av økten. Svar KUN med
+markdown som starter med linjen `TITTEL: <kort tittel på norsk>`, deretter
+seksjonene ## Mål, ## Gjort, ## Beslutninger, ## Problemer, ## Gjenstår, ## Teste.
+Vær konkret: filnavn, kommandoer, feilmeldinger, hvorfor valg ble tatt. Skriv
+"–" i seksjoner uten innhold. Ta ALDRI med passord, tokens, nøkler eller
+persondata. Ikke finn på noe som ikke står i utdraget.
+
+ØKT:
+"""
+
+
+def cmd_hook(_):
+    if os.environ.get('LOGG_HOOK'):
+        return
+    try:
+        data = json.load(sys.stdin)
+    except ValueError:
+        return
+    okt, transcript, cwd = data.get('session_id', ''), data.get('transcript_path', ''), data.get('cwd', os.getcwd())
+    if not transcript or not Path(transcript).exists() or not LOGS.exists():
+        return
+    linjer, filer, committet = les_okt(transcript)
+    filer = {f for f in filer if f and not f.startswith(str(LOGS)) and '/.claude/' not in f
+             and not f.startswith(('/tmp/', '/private/tmp/'))}
+    if not filer and not committet:
+        return
+    r = subprocess.run(['rg', '-l', '-F', f'økt: {okt}', str(LOGS)], capture_output=True, text=True)
+    if okt and r.stdout.strip():
+        return  # økten har logget selv
+    # skriv i bakgrunnen, så avslutningen av Claude ikke venter på oppsummeringen
+    jobb = LOGS / '.ventende' / f'{okt or int(dt.datetime.now().timestamp())}.json'
+    jobb.parent.mkdir(exist_ok=True)
+    jobb.write_text(json.dumps({'okt': okt, 'cwd': cwd, 'filer': sorted(filer), 'linjer': linjer}))
+    subprocess.Popen([sys.executable, __file__, '_skriv', str(jobb)], start_new_session=True,
+                     stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                     env={**os.environ, 'LOGG_HOOK': '1'})
+
+
+def cmd_skriv(args):
+    jobb = Path(args[0])
+    d = json.loads(jobb.read_text())
+    tekst = '\n'.join(d['linjer'])
+    if len(tekst) > 80000:  # behold starten (målet) og slutten (resultatet)
+        tekst = tekst[:20000] + '\n[…]\n' + tekst[-60000:]
+    r = subprocess.run(['claude', '-p', '--model', 'sonnet', '--tools', '', '--no-session-persistence',
+                        '--strict-mcp-config', '--setting-sources', ''],
+                       input=PROMPT + tekst, capture_output=True, text=True, cwd=str(LOGS), timeout=600)
+    ut = r.stdout.strip()
+    m = re.match(r'TITTEL:\s*(.+)', ut)
+    if r.returncode != 0 or not m:
+        hook_log(f'feilet for økt {d["okt"]}: {r.stderr.strip()[:300] or ut[:300]}')
+        return
+    tittel = m.group(1).strip()
+    f = ny_fil(d['cwd'], tittel)
+    f.write_text(frontmatter(d['cwd'], tittel, d['okt'], d['filer'], generert=True) + '\n'
+                 + ut[m.end():].strip() + '\n')
+    jobb.unlink()
+    hook_log(f'skrev {f}')
+
+
+def main():
+    args = sys.argv[1:]
+    cmd = args.pop(0) if args else 'siste'
+    {
+        'kategori': lambda a: print(kategori(a[0] if a else os.getcwd())),
+        'ny': cmd_ny, 'siste': cmd_siste, 'søk': cmd_sok, 'sok': cmd_sok,
+        'hook': cmd_hook, '_skriv': cmd_skriv,
+    }.get(cmd, lambda a: print(__doc__))(args)
+
+
+if __name__ == '__main__':
+    main()

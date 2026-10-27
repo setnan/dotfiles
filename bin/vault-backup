@@ -1,29 +1,103 @@
 #!/bin/zsh
-# Committer og pusher Obsidian-hvelvet hvis noe er endret. Kjøres hver time av
-# launchd/dev.etnan.vault-backup.plist. Stien til hvelvet står i
-# ~/.config/vault-backup/config (VAULT=...), utenfor dette repoet.
+# Committer og pusher git-repoer med notater/logg hvis noe er endret. Kjøres hver
+# time av launchd/dev.etnan.vault-backup.plist. Repoene står i
+# ~/.config/vault-backup/config (REPOS=(...) eller VAULT=...), utenfor dette repoet.
 set -eu
 
 CONFIG="$HOME/.config/vault-backup/config"
 LOG="$HOME/Library/Logs/vault-backup.log"
 [[ -f $CONFIG ]] && source "$CONFIG"
-: ${VAULT:?mangler VAULT i $CONFIG}
+(( ${+REPOS} )) || REPOS=(${VAULT:?mangler REPOS eller VAULT i $CONFIG})
 
-log() { print -r -- "$(date '+%Y-%m-%d %H:%M:%S') $*" >> "$LOG" }
+log() { print -r -- "$(date '+%Y-%m-%d %H:%M:%S') ${repo:t}: $*" >> "$LOG" }
 
-cd "$VAULT"
-git add -A
-if ! git diff --cached --quiet; then
-  n=$(git diff --cached --name-only | wc -l | tr -d ' ')
-  git commit -q -m "Automatisk backup $(date '+%Y-%m-%d %H:%M') ($n filer)"
-  log "commit: $n filer"
-fi
+# Commit-melding som sier hva som er endret. Repo med prosjekter.yaml (~/Logs)
+# får titlene på nye oppføringer, ellers navnene på endrede notater.
+commit_msg() {
+  git -c core.quotePath=false diff --cached --name-status -z | python3 -I -c '
+import sys, os, re
+f = sys.stdin.buffer.read().decode().split("\0")
+endr, i = [], 0
+while i < len(f) - 1:
+    s = f[i]
+    if s[0] in "RC":
+        endr.append(("flyttet", f[i + 2], f[i + 1])); i += 3
+    else:
+        endr.append(({"A": "ny", "D": "slettet"}.get(s[0], "endret"), f[i + 1], None)); i += 2
 
-# push også commits som ikke kom ut forrige gang (f.eks. uten nett)
-if [[ -n "$(git log '@{u}..HEAD' --oneline 2>/dev/null)" ]]; then
-  if git push -q origin HEAD 2>>"$LOG"; then
-    log "push ok"
-  else
-    log "push feilet, prøver igjen neste time"
+def kort(liste, maks=60):
+    ut = ""
+    for n, x in enumerate(liste):
+        neste = (ut + ", " if ut else "") + x
+        if len(neste) > maks:
+            return f"{ut} (+{len(liste) - n})" if ut else x[:maks] + "…"
+        ut = neste
+    return ut
+
+if os.path.exists("prosjekter.yaml"):
+    nye = []
+    for t, p, _ in endr:
+        if t == "ny" and p.endswith(".md") and os.path.exists(p):
+            m = re.search(r"^tittel: (.*)$", open(p, errors="replace").read(), re.M)
+            nye.append((os.path.dirname(os.path.dirname(p)), m.group(1).strip() if m else os.path.basename(p)))
+    andre = [p for t, p, _ in endr if not (t == "ny" and p.endswith(".md"))]
+    tittel = "Logg: " + kort([t for _, t in nye]) if nye else "Logg: " + kort([os.path.basename(p) for p in andre])
+    linjer = [f"{k}: {t}" for k, t in nye] + ([f"endret: {kort(andre, 200)}"] if andre else [])
+else:
+    navn = [os.path.splitext(os.path.basename(p))[0] for t, p, _ in endr if p.endswith(".md")]
+    if not navn:
+        navn = [os.path.basename(p) for _, p, _ in endr]
+    tittel = "Notater: " + kort(list(dict.fromkeys(navn)))
+    linjer = []
+    for type_ in ("ny", "endret", "slettet", "flyttet"):
+        ps = [(f"{o} → {p}" if o else p) for t, p, o in endr if t == type_]
+        if ps:
+            linjer.append((f"{type_}:".ljust(9) + ps[0]) if len(ps) == 1 else f"{type_}:")
+            if len(ps) > 1:
+                linjer += [f"  {p}" for p in ps[:40]] + ([f"  … og {len(ps) - 40} til"] if len(ps) > 40 else [])
+print(tittel + "\n\n" + "\n".join(linjer))
+'
+}
+
+backup() {
+  cd "$repo"
+  git add -A
+  if ! git diff --cached --quiet; then
+    n=$(git diff --cached --name-only | wc -l | tr -d ' ')
+    msg=$(commit_msg) || msg=""
+    git commit -q -m "${msg:-Automatisk backup $(date '+%Y-%m-%d %H:%M') ($n filer)}"
+    log "commit: $n filer"
   fi
-fi
+
+  # første push: sett upstream
+  if ! git rev-parse -q --verify '@{u}' >/dev/null 2>&1; then
+    if git push -q -u origin HEAD 2>>"$LOG"; then log "push ok (upstream satt)"; else log "push feilet"; fi
+    return
+  fi
+
+  # hent endringer fra andre enheter (Obsidian Git på mobilen) før push; ved
+  # konflikt lar vi repoet være som det var og logger, så det kan løses for hånd
+  if ! git pull -q --rebase 2>>"$LOG"; then
+    if [[ -d .git/rebase-merge || -d .git/rebase-apply ]]; then
+      git rebase --abort
+      log "pull: konflikt med remote, løs manuelt (git pull --rebase)"
+    else
+      log "pull feilet (uten nett?), prøver igjen neste time"
+    fi
+    return
+  fi
+
+  # push også commits som ikke kom ut forrige gang (f.eks. uten nett)
+  if [[ -n "$(git log '@{u}..HEAD' --oneline 2>/dev/null)" ]]; then
+    if git push -q origin HEAD 2>>"$LOG"; then
+      log "push ok"
+    else
+      log "push feilet, prøver igjen neste time"
+    fi
+  fi
+}
+
+for repo in $REPOS; do
+  [[ -d $repo/.git ]] || { log "ikke et git-repo, hopper over"; continue }
+  ( backup ) || log "feilet (exit $?)"
+done
