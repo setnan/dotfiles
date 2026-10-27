@@ -1,0 +1,29 @@
+#!/bin/zsh
+# Committer og pusher Obsidian-hvelvet hvis noe er endret. Kjøres hver time av
+# launchd/dev.etnan.vault-backup.plist. Stien til hvelvet står i
+# ~/.config/vault-backup/config (VAULT=...), utenfor dette repoet.
+set -eu
+
+CONFIG="$HOME/.config/vault-backup/config"
+LOG="$HOME/Library/Logs/vault-backup.log"
+[[ -f $CONFIG ]] && source "$CONFIG"
+: ${VAULT:?mangler VAULT i $CONFIG}
+
+log() { print -r -- "$(date '+%Y-%m-%d %H:%M:%S') $*" >> "$LOG" }
+
+cd "$VAULT"
+git add -A
+if ! git diff --cached --quiet; then
+  n=$(git diff --cached --name-only | wc -l | tr -d ' ')
+  git commit -q -m "Automatisk backup $(date '+%Y-%m-%d %H:%M') ($n filer)"
+  log "commit: $n filer"
+fi
+
+# push også commits som ikke kom ut forrige gang (f.eks. uten nett)
+if [[ -n "$(git log '@{u}..HEAD' --oneline 2>/dev/null)" ]]; then
+  if git push -q origin HEAD 2>>"$LOG"; then
+    log "push ok"
+  else
+    log "push feilet, prøver igjen neste time"
+  fi
+fi
