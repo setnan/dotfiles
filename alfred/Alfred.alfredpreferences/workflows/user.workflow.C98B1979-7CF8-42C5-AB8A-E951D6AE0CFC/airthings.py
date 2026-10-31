@@ -6,7 +6,9 @@ Svar fra API-et mellomlagres i 5 minutter, sensoren måler uansett bare
 hvert 5. minutt og API-et har kvote per time. Skyen er bare så fersk som
 siste synk fra telefonen, så når bin/airthings-ble (launchd) har lest
 sensoren over Bluetooth de siste 15 minuttene, brukes de tallene i stedet.
-`air !` ber jobben lese med en gang.
+Er Bluetooth-tallene eldre enn jobbens intervall, bes den lese på nytt (og en
+hengt kjøring drepes) mens Alfred oppdaterer seg selv; `air !` gjør det samme
+og henter skyen på nytt.
 
     python3 airthings.py [filter]   Alfred-JSON («7», «uke», «1.10-15.10» gir luftrapport)
     python3 airthings.py --report [tidsrom]   bare rapportvalg (nøkkelordet luftrapport)
@@ -222,17 +224,27 @@ def read_ble():
     return {"recorded": data["recorded"], "sensors": sensors, "radon_lt": values.get("radonLongTermAvg")}
 
 
+def ble_age():
+    """Sekunder siden bin/airthings-ble sist lagret noe, eller None."""
+    try:
+        return time.time() - os.path.getmtime(os.path.join(CACHE_DIR, "ble.json"))
+    except OSError:
+        return None
+
+
 def kick_ble():
     """Ber launchd-jobben lese sensoren nå (Alfred selv har ikke Bluetooth-tilgang).
 
-    Returnerer True mens vi venter på svaret, så Alfred kan kjøre filteret på nytt."""
+    `kickstart -k` dreper en kjøring som eventuelt henger (Macen sovnet midt i
+    en Bluetooth-lesing) før den starter på nytt. Returnerer True mens vi venter
+    på svaret, så Alfred kan kjøre filteret på nytt."""
     stamp = cache_path("ble-kick")
     try:
         kicked = os.path.getmtime(stamp)
     except OSError:
         kicked = 0
     if time.time() - kicked > 60:
-        subprocess.run(["launchctl", "kickstart", f"gui/{os.getuid()}/{BLE_JOB}"], capture_output=True)
+        subprocess.run(["launchctl", "kickstart", "-k", f"gui/{os.getuid()}/{BLE_JOB}"], capture_output=True)
         open(stamp, "w").close()
         kicked = time.time()
     try:
@@ -344,7 +356,11 @@ def items(query, report_only=False):
     force = q.startswith("!")
     q = q.lstrip("!").strip()
     want = SEARCH.get(q, ALIASES.get(q)) if q else None
-    waiting = kick_ble() if force else False
+    # Jobben leser hvert 5. minutt; er lagringen eldre enn det, har den hengt
+    # eller sensoren er utenfor rekkevidde – be om en ny lesing uansett
+    age = ble_age()
+    stale = age is None or age > CACHE_TTL + 60
+    waiting = kick_ble() if force or stale else False
     ble = read_ble()
     try:
         data = fetch(force)
@@ -407,7 +423,7 @@ def items(query, report_only=False):
                 "mods": {"cmd": {"arg": f"{label}: {txt}", "subtitle": "Kopier verdien"},
                          "shift": {"arg": DASHBOARD, "subtitle": extended(k, ble, cloud)}},
             })
-    if waiting:
+    if waiting and force:
         out.insert(0, {"title": "Leser sensoren over Bluetooth …", "subtitle": "Oppdateres av seg selv når svaret kommer", "valid": False})
     if not out:
         out.append({"title": "Ingen målinger funnet", "subtitle": "Kjør airthings.py --raw for å se svaret fra API-et",

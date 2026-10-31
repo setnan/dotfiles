@@ -16,6 +16,7 @@ rekkevidde.
 import asyncio
 import json
 import os
+import signal
 import struct
 import sys
 from datetime import datetime, timezone
@@ -28,6 +29,7 @@ DATA_DIR = os.path.expanduser("~/Library/Caches/com.runningwithcrayons.Alfred/Wo
 OUT = os.path.join(DATA_DIR, "ble.json")
 HISTORY = os.path.join(DATA_DIR, "ble-history.csv")
 COLUMNS = ["co2", "voc", "temp", "humidity", "pressure", "radonShortTermAvg"]
+TIMEOUT = 60  # hele lesingen; CoreBluetooth svarer aldri hvis Macen sovner midt i den
 
 
 async def read():
@@ -57,8 +59,12 @@ async def read():
 
 
 def main():
+    # Sikkerhetsnett: SIGALRM dreper prosessen hvis selv asyncio-tidsavbruddet
+    # henger. Ellers blir launchd-jobben stående «running» i dagevis og aldri
+    # startet på nytt, og Alfred viser gamle tall.
+    signal.alarm(TIMEOUT + 30)
     try:
-        values = asyncio.run(read())
+        values = asyncio.run(asyncio.wait_for(read(), TIMEOUT))
     except Exception as e:  # utenfor rekkevidde, opptatt (appen er koblet til) o.l.
         print(f"airthings-ble: {type(e).__name__}: {e}", file=sys.stderr)
         return 1
