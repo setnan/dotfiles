@@ -28,3 +28,4 @@
     ~/Library/LaunchAgents/dev.etnan.claude-rc.plist: launchd/dev.etnan.claude-rc.plist
     ~/Library/LaunchAgents/dev.etnan.airthings-ble.plist: launchd/dev.etnan.airthings-ble.plist
     ~/Library/LaunchAgents/dev.etnan.vault-backup.plist: launchd/dev.etnan.vault-backup.plist
+    ~/Library/LaunchAgents/dev.etnan.dash-selection-css.plist: launchd/dev.etnan.dash-selection-css.plist
