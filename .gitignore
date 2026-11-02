@@ -18,3 +18,6 @@ alfred/Alfred.alfredpreferences/workflows/*/.venv/
 # (snapshots of window titles) stay local.
 alfred/Alfred.alfredpreferences/workflows/*/prefs.plist
 alfred/Alfred.alfredpreferences/workflows/user.workflow.D2F4B8A1-6C3E-4F97-8B25-1E9A7C0D4F66/layouts/
+
+# Python bytecode caches inside workflows and scripts
+__pycache__/
