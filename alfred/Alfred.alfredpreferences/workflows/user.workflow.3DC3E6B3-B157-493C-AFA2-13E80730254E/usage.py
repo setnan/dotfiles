@@ -4,6 +4,7 @@
 Leser OAuth-tokenet Claude Code lagrer i nøkkelringen og spør samme endepunkt
 som Claude Code bruker. Kjøres av Alfred med: /usr/bin/python3 usage.py
 """
+import getpass
 import json
 import os
 import subprocess
@@ -37,18 +38,40 @@ def fail(title, subtitle=""):
     emit([{"title": title, "subtitle": subtitle, "valid": False}], cache=False)
 
 
+def keychain_entries():
+    """Gir innholdet i Claude Code-oppføringene i nøkkelringen.
+
+    Tjenestenavnet "Claude Code-credentials" deles av flere oppføringer: selve
+    innloggingen ligger under brukernavnet som konto, mens MCP-plugins (f.eks.
+    Postman) lagrer sine OAuth-tokens under konto "unknown". Uten -a returnerer
+    `security` bare den første, så prøv brukernavnet først.
+    """
+    accounts = [getpass.getuser(), os.environ.get("USER", ""), None]
+    seen = set()
+    for acct in accounts:
+        if acct in seen:
+            continue
+        seen.add(acct)
+        cmd = ["/usr/bin/security", "find-generic-password", "-s", "Claude Code-credentials"]
+        if acct:
+            cmd += ["-a", acct]
+        cmd.append("-w")
+        res = subprocess.run(cmd, capture_output=True, text=True)
+        if res.returncode == 0 and res.stdout.strip():
+            yield res.stdout.strip()
+
+
 def token():
-    try:
-        raw = subprocess.run(
-            ["/usr/bin/security", "find-generic-password", "-s", "Claude Code-credentials", "-w"],
-            capture_output=True, text=True, check=True,
-        ).stdout.strip()
-    except subprocess.CalledProcessError:
+    found = False
+    for raw in keychain_entries():
+        found = True
+        try:
+            return json.loads(raw)["claudeAiOauth"]["accessToken"]
+        except (ValueError, KeyError, TypeError):
+            continue
+    if not found:
         fail("Fant ikke Claude Code-innlogging i nøkkelringen", "Logg inn i Claude Code først (claude → /login)")
-    try:
-        return json.loads(raw)["claudeAiOauth"]["accessToken"]
-    except (ValueError, KeyError, TypeError):
-        fail("Uventet format på nøkkelring-oppføringen", "Kjør /login i Claude Code på nytt")
+    fail("Fant ikke OAuth-token i nøkkelring-oppføringene", "Kjør /login i Claude Code på nytt")
 
 
 def fetch():
