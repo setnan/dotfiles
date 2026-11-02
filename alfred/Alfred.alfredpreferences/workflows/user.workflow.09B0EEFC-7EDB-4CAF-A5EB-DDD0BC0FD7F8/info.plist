@@ -749,7 +749,7 @@ if [[ -f "${pid_file}" ]] &amp;&amp; kill -0 "$(&lt; "${pid_file}")" 2&gt;/dev/n
   exit 0
 fi
 
-readonly src="$(find "${HOME}/Downloads" -maxdepth 1 -type f \( -iname '*.wav' -o -iname '*.m4a' -o -iname '*.mp3' -o -iname '*.aac' \) -exec stat -f '%m %N' {} \; | sort -rn | head -1 | cut -d' ' -f2-)"
+readonly src="$(find "${HOME}/Downloads" -maxdepth 1 -type f \( -iname '*.wav' -o -iname '*.m4a' -o -iname '*.mp3' -o -iname '*.aac' -o -iname '*.opus' -o -iname '*.ogg' -o -iname '*.oga' -o -iname '*.flac' -o -iname '*.aiff' -o -iname '*.aif' -o -iname '*.caf' -o -iname '*.wma' -o -iname '*.amr' -o -iname '*.m4b' -o -iname '*.webm' -o -iname '*.weba' -o -iname '*.mp4' -o -iname '*.mov' -o -iname '*.mkv' \) -exec stat -f '%m %N' {} \; | sort -rn | head -1 | cut -d' ' -f2-)"
 
 if [[ -z "${src}" ]]; then
   osascript -e 'display notification "Fant ingen lydfil i Downloads" with title "Transkribering"'
@@ -865,7 +865,7 @@ if [[ -f "${pid_file}" ]] &amp;&amp; kill -0 "$(&lt; "${pid_file}")" 2&gt;/dev/n
   exit 0
 fi
 
-readonly src="$(find "${HOME}/Downloads" -maxdepth 1 -type f \( -iname '*.wav' -o -iname '*.m4a' -o -iname '*.mp3' -o -iname '*.aac' \) -exec stat -f '%m %N' {} \; | sort -rn | head -1 | cut -d' ' -f2-)"
+readonly src="$(find "${HOME}/Downloads" -maxdepth 1 -type f \( -iname '*.wav' -o -iname '*.m4a' -o -iname '*.mp3' -o -iname '*.aac' -o -iname '*.opus' -o -iname '*.ogg' -o -iname '*.oga' -o -iname '*.flac' -o -iname '*.aiff' -o -iname '*.aif' -o -iname '*.caf' -o -iname '*.wma' -o -iname '*.amr' -o -iname '*.m4b' -o -iname '*.webm' -o -iname '*.weba' -o -iname '*.mp4' -o -iname '*.mov' -o -iname '*.mkv' \) -exec stat -f '%m %N' {} \; | sort -rn | head -1 | cut -d' ' -f2-)"
 
 if [[ -z "${src}" ]]; then
   osascript -e 'display notification "Fant ingen lydfil i Downloads" with title "Transkribering"'
