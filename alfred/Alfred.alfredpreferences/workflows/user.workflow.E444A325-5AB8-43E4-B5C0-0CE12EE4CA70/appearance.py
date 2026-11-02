@@ -1,10 +1,24 @@
 #!/usr/bin/env python3
 """Bytt macOS mellom lys og mørk modus via System Events.
 
-Bruk: appearance.py light|dark|toggle
+Bruk: appearance.py light|dark|toggle|auto
+
+light/dark/toggle slår samtidig av macOS sitt «Auto»-utseende, ellers
+tilbakestiller macOS valget ved neste vekking/opplåsing. `auto` slår det
+på igjen.
 """
 import subprocess
 import sys
+
+AUTO_KEY = "AppleInterfaceStyleSwitchesAutomatically"
+
+
+def set_auto(enabled: bool) -> None:
+    subprocess.run(
+        ["/usr/bin/defaults", "write", "-g", AUTO_KEY, "-bool",
+         "true" if enabled else "false"],
+        check=False,
+    )
 
 
 def osascript(expr: str) -> str:
@@ -35,9 +49,14 @@ def main() -> None:
         target = True
     elif mode in ("light", "lys"):
         target = False
+    elif mode == "auto":
+        set_auto(True)
+        print("Automatisk utseende (følger tid på døgnet)")
+        return
     else:
         print(f"Ukjent modus: {mode}")
         sys.exit(1)
+    set_auto(False)
     osascript(f"set dark mode to {'true' if target else 'false'}")
     print("Mørk modus" if target else "Lys modus")
 

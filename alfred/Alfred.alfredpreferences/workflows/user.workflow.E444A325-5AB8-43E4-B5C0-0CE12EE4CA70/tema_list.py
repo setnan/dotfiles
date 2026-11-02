@@ -16,6 +16,14 @@ def is_dark():
     return res.stdout.strip() == "true"
 
 
+def auto_enabled():
+    res = subprocess.run(
+        ["/usr/bin/defaults", "read", "-g", "AppleInterfaceStyleSwitchesAutomatically"],
+        capture_output=True, text=True,
+    )
+    return res.returncode == 0 and res.stdout.strip() == "1"
+
+
 def item(title, subtitle, arg, icon, uid):
     return {
         "uid": uid,
@@ -41,9 +49,12 @@ def main():
         })
     else:
         current = "mørk" if dark else "lys"
+        auto = auto_enabled()
+        if auto:
+            current += " (Auto er på, macOS kan bytte tilbake)"
         items.append(item(
             "Bytt til lys modus" if dark else "Bytt til mørk modus",
-            f"Nå: {current} modus",
+            f"Nå: {current} modus" if not auto else f"Nå: {current}",
             "toggle", "light.png" if dark else "dark.png", "toggle",
         ))
         items.append(item(
@@ -55,6 +66,11 @@ def main():
             "Mørk modus",
             "Aktiv nå" if dark else "Bytt til mørkt utseende",
             "dark", "dark.png", "dark",
+        ))
+        items.append(item(
+            "Automatisk",
+            "Aktiv nå" if auto else "La macOS bytte etter tid på døgnet",
+            "auto", "toggle.png", "auto",
         ))
 
     if query:
