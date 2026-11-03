@@ -33,6 +33,7 @@ brew "stripe/stripe-cli/stripe"
 
 # Lyd (BlackHole-opptak + transkribering via Alfred-workflowen "Bytt lydutgang")
 cask "blackhole-2ch"    # virtuell lydenhet for opptak av systemlyd
+cask "font-jetbrains-mono-nerd-font" # samme font som Ghostty (bundlet der), brukes i Sublime Text
 brew "switchaudio-osx"  # SwitchAudioSource – bytter lydutgang
 brew "sox"              # opptaker (CoreAudio direkte; ffmpeg/avfoundation mister samples)
 brew "ffmpeg"           # 16 kHz-konvertering før whisper

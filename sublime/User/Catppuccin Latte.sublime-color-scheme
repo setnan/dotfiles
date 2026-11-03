@@ -1,0 +1,42 @@
+// Overstyring av Catppuccin Latte (ligger i Packages/User, så upstream-fila i
+// Packages/Catppuccin er urørt). Speiler hvordan Claude Code ser ut i Ghostty:
+// overskrifter i mauve (fet), fet tekst i tekstfargen, linker og inline-kode
+// i lavender, markdown-tegnene (## og -) dempet.
+{
+	"rules":
+	[
+		{
+			"scope": "markup.underline.link, markup.underline.link.markdown, meta.link.inet",
+			"foreground": "var(lavender)",
+			"font_style": "underline"
+		},
+		{
+			"scope": "markup.raw.inline, markup.raw.inline punctuation.definition.raw",
+			"foreground": "var(lavender)"
+		},
+		{
+			"scope": "markup.heading, entity.name.section",
+			"foreground": "var(mauve)",
+			"font_style": "bold"
+		},
+		{
+			"scope": "markup.heading punctuation.definition.heading",
+			"foreground": "var(overlay1)",
+			"font_style": ""
+		},
+		{
+			"scope": "markup.bold",
+			"foreground": "var(text)",
+			"font_style": "bold"
+		},
+		{
+			"scope": "markup.bold punctuation.definition.bold",
+			"foreground": "var(overlay1)",
+			"font_style": ""
+		},
+		{
+			"scope": "punctuation.definition.list_item.markdown",
+			"foreground": "var(overlay1)"
+		},
+	]
+}

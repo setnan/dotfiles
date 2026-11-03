@@ -23,6 +23,13 @@
     ~/.config/micro/settings.json: micro/settings.json
     ~/.config/micro/bindings.json: micro/bindings.json
     ~/.config/zed/settings.json: zed/settings.json
+    ~/Library/Application Support/Sublime Text/Packages/User/Preferences.sublime-settings:
+      path: sublime/Preferences.sublime-settings
+      force: true
+    ~/Library/Application Support/Sublime Text/Packages/Catppuccin: sublime/Catppuccin
+    ~/Library/Application Support/Sublime Text/Packages/User/Catppuccin Mocha.sublime-color-scheme: sublime/User/Catppuccin Mocha.sublime-color-scheme
+    ~/Library/Application Support/Sublime Text/Packages/User/Catppuccin Latte.sublime-color-scheme: sublime/User/Catppuccin Latte.sublime-color-scheme
+    ~/Library/Application Support/Sublime Text/Packages/User/txt_as_markdown.py: sublime/User/txt_as_markdown.py
     ~/.tmux.conf: tmux.conf
     ~/bin: bin
     ~/Library/LaunchAgents/dev.etnan.claude-rc.plist: launchd/dev.etnan.claude-rc.plist

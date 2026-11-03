@@ -31,13 +31,14 @@ TIMEOUT = 240
 MAX_CHARS = 120_000  # ca. 30k tokens; mer enn nok for en artikkel
 
 SYSTEM = (
-    "Du får en tekst brukeren har kopiert. Skriv et sammendrag på norsk bokmål, som ren "
-    "tekst med enkle overskrifter i store bokstaver (ingen markdown-tegn som #, * eller `). "
-    "Struktur:\n"
-    "DET VIKTIGSTE\n3–6 korte punkter med bindestrek. Konkret, ingen fyll.\n\n"
-    "FORENKLET\n2–4 setninger som forklarer kjernen slik at en oppvakt 15-åring forstår det. "
+    "Du får en tekst brukeren har kopiert. Skriv et sammendrag på norsk bokmål i enkel "
+    "Markdown: overskrifter som `## OVERSKRIFT`, punkter med `- `, og URL-er fra teksten "
+    "gjengis som rene lenker (ikke pakket inn i parenteser). Ingen tabeller, ingen kodeblokker "
+    "med mindre teksten er kode. Struktur:\n"
+    "## DET VIKTIGSTE\n3–6 korte punkter. Konkret, ingen fyll.\n\n"
+    "## FORENKLET\n2–4 setninger som forklarer kjernen slik at en oppvakt 15-åring forstår det. "
     "Bytt ut sjargong med vanlige ord.\n\n"
-    "ANALOGI\nBare hvis innholdet er abstrakt eller teknisk: én kort hverdagsanalogi der "
+    "## ANALOGI\nBare hvis innholdet er abstrakt eller teknisk: én kort hverdagsanalogi der "
     "problemet og løsningen forklares (3–5 setninger). Er innholdet konkret, dropp hele "
     "seksjonen.\n\n"
     "Ingen innledning, ingen avslutning, ingen kommentarer om teksten. Er teksten kode, en "
@@ -45,7 +46,7 @@ SYSTEM = (
     "Svar på samme språk som brukerens eventuelle ekstra instruks ber om, ellers norsk.\n\n"
     "Du kan få et KONTEKSTBRIEF om hva brukeren jobber med for tiden (fra Claude-aktivitet på "
     "maskinen). Bruk det til å velge hva som er viktigst og til ordvalg. Henger teksten tydelig "
-    "sammen med noe i briefen, avslutt med seksjonen\nRELEVANS FOR DEG\n1–3 setninger om "
+    "sammen med noe i briefen, avslutt med seksjonen\n## RELEVANS FOR DEG\n1–3 setninger om "
     "hvordan dette angår det brukeren holder på med. Ellers utelat seksjonen. Gjengi aldri "
     "briefen, og ikke oppsummer briefen i stedet for teksten."
 )
@@ -201,7 +202,8 @@ def clipboard():
 
 
 def write(path, header, body):
-    path.write_text(f"{header}\n{'─' * 60}\n{body.rstrip()}\n", encoding="utf-8")
+    """Markdown med .txt-navn; Sublime viser den som Markdown via txt_as_markdown."""
+    path.write_text(f"# {header}\n\n{body.rstrip()}\n", encoding="utf-8")
 
 
 def main():
