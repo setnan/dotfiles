@@ -9,12 +9,12 @@ heading is missing it is created above the first existing `## ` heading so
 quick notes land at the top. Keyword `h <tekst>` / `handleliste <tekst>` runs
 the same script with an empty section against +/Handel.md (shopping mode).
 There the item goes under `## Handleliste`, or under a store sub-heading
-inside it when a store keyword is given: `Glutenfri musli obs 3` →
-`- [ ] Glutenfri musli x3` under `### Obs`. Keywords (case-insensitive, first
-or last word of an item): obs, kiwi, meny, rema → Rema 1000, claes/clas → Clas Ohlson,
+inside it when a store keyword is given: `Glutenfri musli coop 3` →
+`- [ ] Glutenfri musli x3` under `### Coop`. Keywords (case-insensitive, first
+or last word of an item): coop, kiwi, meny, rema → Rema 1000, claes/clas → Clas Ohlson,
 bil → Biltema, t → Thansen, farma/apo → Apotek, sunn → Sunnkost. A leading
-keyword applies to every comma-separated part (`obs melk, brød` → both under
-Obs). Store-less items land above the first `###`; a missing store heading is
+keyword applies to every comma-separated part (`coop melk, brød` → both under
+Coop). Store-less items land above the first `###`; a missing store heading is
 created at the end of the Handleliste section. A trailing number is a quantity:
 `Laktosefri melk 2` (or `x2`, `2x`, `2 stk`) becomes `Laktosefri melk x2`.
 Comma-separated input (`melk 2, brød, egg 12`) becomes one item per part.
@@ -119,7 +119,7 @@ SHOP_SECTION = "Handleliste"  # items without a store keyword go here
 
 # keyword (lower-case) → heading. Keep keywords single words.
 STORES = {
-    "obs": "Obs",
+    "coop": "Coop",
     "kiwi": "Kiwi",
     "meny": "Meny",
     "rema": "Rema 1000",
@@ -137,7 +137,7 @@ def split_store(text):
     """Strip a store keyword from the first or last word of `text`.
 
     Returns (text_without_keyword, store_heading or None). The quantity, if
-    any, is kept at the end so `musli obs 3` and `obs musli 3` both work.
+    any, is kept at the end so `musli coop 3` and `coop musli 3` both work.
     """
     m = QTY_RE.match(text)
     name, qty = (m.group("name").strip(), m.group("qty")) if m else (text, None)
