@@ -53,7 +53,7 @@
 				<key>keyword</key>
 				<string>sum</string>
 				<key>subtext</key>
-				<string>Claude ({var:sum_model}) oppsummerer utklippstavlen → sum.txt · valgfri ekstra instruks</string>
+				<string>Claude ({var:sum_model}) oppsummerer utklippstavlen → sum.html · «sum vis» åpner vinduet · ellers ekstra instruks</string>
 				<key>text</key>
 				<string>Sammendrag av utklippstavlen</string>
 				<key>withspace</key>
@@ -112,9 +112,9 @@
 		</dict>
 	</array>
 	<key>readme</key>
-	<string>sum [ekstra instruks]: leser utklippstavlen og lar Claude skrive det viktigste, en forenkling og (hvis abstrakt) en analogi til fila i «Sammendragsfil». Fila overskrives hver gang og viser en statuslinje mens Claude jobber.
+	<string>sum [ekstra instruks]: leser utklippstavlen og lar Claude skrive det viktigste, en forenkling nesten alle forstår og en analogi (gjengitt fra teksten hvis den finnes der). Skrives til HTML-sida («sum vis» åpner den i et eget vindu, den oppdaterer seg selv), som overskrives hver gang. Valgfri tekstfil i tillegg via «Tekstfil».
 
-Claude får også et kontekstbrief om hva du jobber med (siste «Kontekst»-timer med Claude-aktivitet på maskinen) og legger til «RELEVANS FOR DEG» når teksten angår det. Briefen bygges i minnet ved hver kjøring og lagres ikke.</string>
+Claude får et lite kontekstbrief om hva du jobber med (siste «Kontekst»-timer med Claude-aktivitet på maskinen); briefen bygges i minnet og lagres ikke.</string>
 	<key>uidata</key>
 	<dict>
 		<key>4A1B2C3D-5E6F-4A7B-8C9D-0E1F2A3B4C5D</key>
@@ -145,7 +145,7 @@ Claude får også et kontekstbrief om hva du jobber med (siste «Kontekst»-time
 			<key>config</key>
 			<dict>
 				<key>default</key>
-				<string>~/Documents/Summary/sum.txt</string>
+				<string>~/Documents/Summary/sum.html</string>
 				<key>filtermode</key>
 				<integer>1</integer>
 				<key>placeholder</key>
@@ -154,28 +154,28 @@ Claude får også et kontekstbrief om hva du jobber med (siste «Kontekst»-time
 				<false/>
 			</dict>
 			<key>description</key>
-			<string>Tekstfila sammendraget skrives til (overskrives hver gang)</string>
+			<string>HTML-sida med sammendraget (overskrives hver gang). Åpne med «sum vis».</string>
 			<key>label</key>
-			<string>Sammendragsfil</string>
+			<string>Sammendragsside (HTML)</string>
 			<key>type</key>
 			<string>filepicker</string>
 			<key>variable</key>
-			<string>sum_path</string>
+			<string>sum_html</string>
 		</dict>
 		<dict>
 			<key>config</key>
 			<dict>
 				<key>default</key>
-				<string>opus</string>
+				<string>sonnet</string>
 				<key>placeholder</key>
-				<string>opus</string>
+				<string>sonnet</string>
 				<key>required</key>
 				<false/>
 				<key>trim</key>
 				<true/>
 			</dict>
 			<key>description</key>
-			<string>Claude-modell: opus, sonnet, haiku eller fullt modellnavn</string>
+			<string>Claude-modell: haiku (raskest), sonnet (anbefalt), opus (grundigst) eller fullt modellnavn</string>
 			<key>label</key>
 			<string>Modell</string>
 			<key>type</key>
@@ -187,9 +187,9 @@ Claude får også et kontekstbrief om hva du jobber med (siste «Kontekst»-time
 			<key>config</key>
 			<dict>
 				<key>default</key>
-				<string>72</string>
+				<string>24</string>
 				<key>placeholder</key>
-				<string>72</string>
+				<string>24</string>
 				<key>required</key>
 				<false/>
 				<key>trim</key>
@@ -203,6 +203,27 @@ Claude får også et kontekstbrief om hva du jobber med (siste «Kontekst»-time
 			<string>textfield</string>
 			<key>variable</key>
 			<string>sum_context</string>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>default</key>
+				<string></string>
+				<key>filtermode</key>
+				<integer>1</integer>
+				<key>placeholder</key>
+				<string></string>
+				<key>required</key>
+				<false/>
+			</dict>
+			<key>description</key>
+			<string>Tom = bare HTML. Sett en .txt/.md-sti for å få sammendraget som Markdown i tillegg.</string>
+			<key>label</key>
+			<string>Tekstfil (valgfri)</string>
+			<key>type</key>
+			<string>filepicker</string>
+			<key>variable</key>
+			<string>sum_path</string>
 		</dict>
 	</array>
 	<key>variablesdontexport</key>
