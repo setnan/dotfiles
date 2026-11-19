@@ -40,6 +40,9 @@ alias mps='mix phx.server'
 alias imps='iex -S mix phx.server'
 alias mt='mix test'
 alias mdg='mix deps.get'
+# mix with the version 27 Command Line Tools (linker that knows SDK 27), for deps
+# with C code like bcrypt_elixir. xcode-select stays on Xcode 26 for iOS builds.
+alias mix27='DEVELOPER_DIR=/Library/Developer/CommandLineTools mix'
 
 # Tree
 alias tree2='tree -L 2'
@@ -96,6 +99,9 @@ function serve {
     python3 -m http.server "$port"
   fi
 }
+
+# Create a file and any missing folders above it
+mkf() { mkdir -p "$(dirname "$1")" && touch "$1"; }
 
 # Bygg/oppdater Fly.io-docset for Dash (søkbart i Alfred med "fly <søk>")
 alias fly-docset="python3 ~/.dotfiles/dash/build-fly-docset.py"
