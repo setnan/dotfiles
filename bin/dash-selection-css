@@ -1,0 +1,130 @@
+#!/usr/bin/env python3
+"""Gi Dash sin mørke modus lilla markeringsfarge (ex_doc/Phoenix-lilla) i Elixir/Erlang-docsets.
+
+Dash har ingen bruker-CSS. I «actually dark»-modus legger Dash inn
+`::selection { background-color: lightsalmon; color: #000 }` og inverterer hele
+siden med `filter: invert() hue-rotate(180deg) contrast(80%) brightness(120%)
+contrast(85%)`. Resultatet er en oransje markering. Dette scriptet legger en
+`::selection`-regel med !important sist i ex_doc-CSS-en i hvert docset, slik at
+den vinner. Fargen #CDB0FF er valgt slik at den etter Dash-filteret vises som
+ca. #725B9B, en mørk lilla i ex_doc-retning. Filteret komprimerer kontrasten,
+så en lysere kildefarge gir mørkere resultat, og mettede mørke farger er ikke
+oppnåelige. (#9A84FF ga ≈ #8D7BE0 = ex_doc sin `--main` i mørkt tema, men
+brukeren ville ha mørkere.) Endres fargen her, bytter neste kjøring regelen.
+
+Dash sine egne docsets (Elixir, Erlang) ligger komprimert i tarix.tgz med en
+sqlite-indeks. For dem pakkes CSS-filene ut, får regelen, og skrives til
+Contents/Resources/Documents/… på disk, der Dash leter først.
+
+Hex-docsets oppdateres automatisk av Dash og mister da endringen, derfor kjøres
+scriptet jevnlig fra launchd (dev.etnan.dash-selection-css). Idempotent.
+
+Bruk: dash-selection-css [--remove] [--quiet]
+"""
+import fnmatch
+import pathlib
+import sqlite3
+import subprocess
+import sys
+
+DASH = pathlib.Path.home() / "Library/Application Support/Dash"
+ROOTS = [DASH / "Hex DocSets", DASH / "DocSets", DASH / "Generated"]
+PATTERNS = ("html-elixir-*.css", "html-erlang-*.css")
+MARK = "/*dash-selection-css*/"
+RULE = (
+    f"\n{MARK}::selection{{background-color:#CDB0FF!important;color:#000!important}}"
+    f"::-moz-selection{{background-color:#CDB0FF!important;color:#000!important}}{MARK}\n"
+)
+
+
+def targets():
+    for root in ROOTS:
+        if not root.is_dir():
+            continue
+        for pattern in PATTERNS:
+            yield from root.rglob(pattern)
+
+
+def tarix_targets():
+    """Gir (css-sti på disk, tgz, medlemsnavn) for ex_doc-CSS i komprimerte docsets."""
+    for root in ROOTS:
+        if not root.is_dir():
+            continue
+        for index in root.glob("*/*.docset/Contents/Resources/tarixIndex.db"):
+            tgz = index.with_name("tarix.tgz")
+            if not tgz.is_file():
+                continue
+            try:
+                rows = sqlite3.connect(f"file:{index}?mode=ro", uri=True).execute(
+                    "select path from tarindex where path like '%.css'").fetchall()
+            except sqlite3.Error:
+                continue
+            docset = index.parents[2]
+            for (member,) in rows:
+                if not any(fnmatch.fnmatch(pathlib.PurePosixPath(member).name, pat) for pat in PATTERNS):
+                    continue
+                rel = pathlib.PurePosixPath(member)
+                if rel.parts and rel.parts[0] == docset.name:
+                    rel = pathlib.PurePosixPath(*rel.parts[1:])
+                yield docset / pathlib.Path(*rel.parts), tgz, member
+
+
+def extract(tgz, member):
+    res = subprocess.run(["/usr/bin/tar", "-xzf", str(tgz), "-O", member],
+                         capture_output=True, check=True)
+    return res.stdout.decode("utf-8", errors="surrogateescape")
+
+
+def strip(text):
+    while MARK in text:
+        start = text.index(MARK)
+        end = text.index(MARK, start + len(MARK)) + len(MARK)
+        text = text[:start].rstrip("\n") + text[end:]
+    return text
+
+
+def main():
+    remove = "--remove" in sys.argv
+    quiet = "--quiet" in sys.argv
+    changed = seen = 0
+    for css in targets():
+        seen += 1
+        text = css.read_text(encoding="utf-8", errors="surrogateescape")
+        new = strip(text) if remove else strip(text).rstrip("\n") + RULE
+        if new != text:
+            css.write_text(new, encoding="utf-8", errors="surrogateescape")
+            changed += 1
+            if not quiet:
+                name = next((part for part in css.parts if part.endswith(".docset")), css.name)
+                print(("fjernet: " if remove else "lagt til: ") + name)
+    for css, tgz, member in tarix_targets():
+        seen += 1
+        if remove:
+            if css.exists():
+                css.unlink()
+                changed += 1
+                if not quiet:
+                    print("fjernet (tarix): " + member)
+            continue
+        if css.exists():
+            text = css.read_text(encoding="utf-8", errors="surrogateescape")
+        else:
+            try:
+                text = extract(tgz, member)
+            except subprocess.CalledProcessError as e:
+                print(f"klarte ikke pakke ut {member}: {e.stderr.decode(errors='replace').strip()}", file=sys.stderr)
+                continue
+        new = strip(text).rstrip("\n") + RULE
+        if css.exists() and new == text:
+            continue
+        css.parent.mkdir(parents=True, exist_ok=True)
+        css.write_text(new, encoding="utf-8", errors="surrogateescape")
+        changed += 1
+        if not quiet:
+            print("lagt til (tarix): " + member)
+    if not quiet:
+        print(f"{changed} av {seen} CSS-filer endret")
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Committer og pusher Obsidian-hvelvet hver time hvis noe er endret
+	     (bin/vault-backup). Symlinkes til ~/Library/LaunchAgents av dotbot. Last inn med:
+	     launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/dev.etnan.vault-backup.plist -->
+	<key>Label</key>
+	<string>dev.etnan.vault-backup</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/bin/zsh</string>
+		<string>-c</string>
+		<string>exec "$HOME/bin/vault-backup"</string>
+	</array>
+	<key>StartInterval</key>
+	<integer>3600</integer>
+	<key>RunAtLoad</key>
+	<true/>
+	<key>ProcessType</key>
+	<string>Background</string>
+	<key>LowPriorityIO</key>
+	<true/>
+	<key>StandardErrorPath</key>
+	<string>/tmp/vault-backup.err</string>
+</dict>
+</plist>

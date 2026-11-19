@@ -1,0 +1,52 @@
+#!/bin/zsh
+# cx – Claude Code i en tmux-økt per prosjekt, laget for mosh/ssh fra telefonen.
+#   cx               viser kjørende økter og prosjekter
+#   cx <søk>         går til prosjektet som passer best, starter eller kobler til økten
+#   cx <søk> -c      som over, men fortsetter forrige Claude-samtale i mappen
+# Prosjektene letes opp under $CX_ROOT (standard: dir= i ~/.config/claude-rc/config).
+setopt extended_glob null_glob
+export PATH="$HOME/.local/bin:/opt/homebrew/bin:$PATH"
+
+root="$CX_ROOT"
+if [[ -z $root && -f ~/.config/claude-rc/config ]]; then
+  root=$(sed -n 's/^dir=//p' ~/.config/claude-rc/config | tail -1)
+fi
+root=${root:-$HOME/Documents}
+
+projects() { print -l $root/*(/N) $root/*/*(/N) | grep -v -E '/(node_modules|_build|deps|\.[^/]*)$' | sort -f; }
+
+if (( $# == 0 )); then
+  print -P "%BKjørende økter%b"
+  tmux ls -F '  #{session_name}  (#{session_windows} vindu, sist brukt #{t:session_activity})' 2>/dev/null | grep -v '^  rc ' || print "  ingen"
+  print -P "\n%BProsjekter under ${root/#$HOME/~}%b"
+  projects | sed "s|^$root/|  |"
+  print "\nBruk: cx <søk> [-c]"
+  exit 0
+fi
+
+query=$1; cont=""
+[[ $2 == -c ]] && cont="--continue"
+
+all=("${(@f)$(projects)}")
+match=(${(M)all:#(#i)*/$query})                     # eksakt mappenavn
+(( ${#match} )) || match=(${(M)all:#(#i)*/$query*})  # starter med
+(( ${#match} )) || match=(${(M)all:#(#i)*/*$query*}) # inneholder (også i stien)
+
+if (( ${#match} == 0 )); then
+  print "Fant ingen prosjekt som passer «$query» under $root" >&2; exit 1
+elif (( ${#match} > 1 )); then
+  print "Flere treff for «$query», vær mer presis:" >&2
+  print -l ${match#$root/} | sed 's/^/  /' >&2; exit 1
+fi
+
+dir=$match[1]
+name=${${dir:t}//[.:]/-}
+
+if ! tmux has-session -t "=$name" 2>/dev/null; then
+  tmux new-session -d -s "$name" -c "$dir" "claude $cont; exec zsh -l"
+fi
+if [[ -n $TMUX ]]; then
+  exec tmux switch-client -t "=$name"
+else
+  exec tmux attach -t "=$name"
+fi

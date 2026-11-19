@@ -1,0 +1,44 @@
+# Installed with: brew bundle
+
+# Shell
+brew "starship"
+brew "fzf"
+brew "eza"
+brew "zoxide"
+brew "ripgrep"
+brew "fd"
+brew "bat"
+brew "direnv"
+brew "tree"
+
+# Editor
+brew "micro"
+
+# Apps
+cask "alfred"
+cask "ghostty@tip"     # tip til 1.4 er ute: stabil 1.3.1 ødelegger tabs i tittellinjen på macOS 27 – bytt til "ghostty" da
+
+# Dev
+brew "gh"
+brew "1password-cli"   # brukes av 1Password-workflowen i Alfred (keyword 1p)
+brew "node"
+brew "elixir"
+brew "elixir-ls"
+brew "postgresql@18"
+brew "flyctl"
+brew "exiftool"
+# Third-party tap: run `brew trust stripe/stripe-cli` once before `brew bundle`
+tap "stripe/stripe-cli"
+brew "stripe/stripe-cli/stripe"
+
+# Lyd (BlackHole-opptak + transkribering via Alfred-workflowen "Bytt lydutgang")
+cask "blackhole-2ch"    # virtuell lydenhet for opptak av systemlyd
+cask "font-jetbrains-mono-nerd-font" # samme font som Ghostty (bundlet der), brukes i Sublime Text
+brew "switchaudio-osx"  # SwitchAudioSource – bytter lydutgang
+brew "sox"              # opptaker (CoreAudio direkte; ffmpeg/avfoundation mister samples)
+brew "ffmpeg"           # 16 kHz-konvertering før whisper
+brew "whisper.cpp"      # whisper-cli, modeller i ~/.whisper-models
+
+# Claude Code Remote Control fra mobilen: tmux holder serveren, mosh for Blink Shell over Tailscale
+brew "tmux"
+brew "mosh"

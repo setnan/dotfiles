@@ -1,0 +1,23 @@
+// Sublime Text, speiler Ghostty: Catppuccin Latte (lys) / Mocha (mørk) som
+// følger systemets utseende, JetBrainsMono Nerd Font 14. Fargeskjemaene ligger
+// i sublime/Catppuccin (fra github.com/catppuccin/sublime-text, MIT) og
+// symlinkes til Packages/Catppuccin av dotbot.
+{
+	"font_face": "JetBrainsMono Nerd Font",
+	"font_size": 13,
+
+	"color_scheme": "auto",
+	"light_color_scheme": "Packages/Catppuccin/Catppuccin Latte.sublime-color-scheme",
+	"dark_color_scheme": "Packages/Catppuccin/Catppuccin Mocha.sublime-color-scheme",
+	// Adaptive tar UI-fargene fra fargeskjemaet, så sidepanel og faner matcher.
+	"theme": "Adaptive.sublime-theme",
+
+	// .txt-filer som skal vises som Markdown (plugin User/txt_as_markdown.py),
+	// f.eks. sammendragsfila fra Alfred-workflowen «sum».
+	"txt_as_markdown": ["sum.txt"],
+
+	"ignored_packages":
+	[
+		"Vintage",
+	],
+}

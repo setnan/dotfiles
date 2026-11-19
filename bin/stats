@@ -1,0 +1,91 @@
+#!/bin/zsh
+# stats – rask oversikt over maskinen: disk, minne, CPU, batteri, nett og mobil-riggen.
+#   stats        én gang
+#   stats -w     oppdaterer hvert 5. sekund (Ctrl+C for å avslutte)
+export PATH="/opt/homebrew/bin:/usr/sbin:/usr/bin:/bin:/sbin:$PATH"
+
+if [[ $1 == -w ]]; then
+  while true; do clear; "$0"; sleep 5; done
+fi
+
+b=$'\e[1m' d=$'\e[2m' g=$'\e[32m' y=$'\e[33m' r=$'\e[31m' n=$'\e[0m'
+
+# bar <prosent> → farget stolpe, 20 tegn
+bar() {
+  local p=$1 w=20 f c
+  (( f = p * w / 100, f > w ? (f = w) : 0 ))
+  if (( p >= 90 )); then c=$r; elif (( p >= 75 )); then c=$y; else c=$g; fi
+  printf '%s%s%s%s' "$c" "${(l:f::█:)}" "$d${(l:w-f::░:)}" "$n"
+}
+gib() { printf '%.1f' $(( $1 / 1073741824.0 )); }
+section() { print "\n$b$1$n"; }
+
+print "$b$(scutil --get ComputerName 2>/dev/null || hostname -s)$n $d· macOS $(sw_vers -productVersion) · $(sysctl -n machdep.cpu.brand_string)$n"
+up=$(uptime | sed -E 's/.*up +//; s/, +[0-9]+ users?.*//')
+load=$(sysctl -n vm.loadavg | awk '{print $2, $3, $4}')
+print "${d}Oppe$n $up  ${d}Last$n $load"
+
+# Disk: datavolumet (/ er det skrivebeskyttede systemvolumet) + eksterne volumer
+section Disk
+data_dev=$(df -k /System/Volumes/Data | awk 'NR==2 {print $1}')
+for mnt in /System/Volumes/Data /Volumes/*(N); do
+  dev=$(df -k "$mnt" | awk 'NR==2 {print $1}')
+  [[ $dev == /dev/disk* ]] || continue
+  # hopp over det interne volumet under andre navn og små diskbilder (.dmg)
+  [[ $mnt != /System/Volumes/Data && ${dev%%s[0-9]*} == ${data_dev%%s[0-9]*} ]] && continue
+  read -r tot avail <<<"$(df -k "$mnt" | awk 'NR==2 {print $2, $4}')"
+  (( tot < 4 * 1048576 )) && continue
+  name=${mnt:t}; [[ $mnt == /System/Volumes/Data ]] && name=Intern
+  p=$(( (tot - avail) * 100 / tot ))
+  printf '  %-10s %s %3d%%  %s ledig av %s GB\n' "${name[1,10]}" "$(bar $p)" $p "$(gib $((avail*1024)))" "$(gib $((tot*1024)))"
+done
+
+# Minne: samme regnestykke som Aktivitetsmonitor (app + kablet + komprimert)
+section Minne
+total=$(sysctl -n hw.memsize)
+vm_stat | awk '
+  /page size of/ {ps=$8}
+  /Anonymous pages/ {anon=$3} /Pages purgeable/ {purg=$3}
+  /wired down/ {wired=$4} /occupied by compressor/ {comp=$5}
+  /File-backed pages/ {file=$3}
+  END {
+    printf "%d %d %d %d\n", (anon-purg+wired+comp)*ps, (anon-purg)*ps, wired*ps, comp*ps
+    printf "%d\n", file*ps
+  }' | { read used app wired comp; read cache }
+p=$(( used * 100 / total ))
+printf '  %-10s %s %3d%%  %s av %s GB\n' Brukt "$(bar $p)" $p "$(gib $used)" "$(gib $total)"
+printf '  %s  app %s · kablet %s · komprimert %s · cache %s GB%s\n' "$d" "$(gib $app)" "$(gib $wired)" "$(gib $comp)" "$(gib $cache)" "$n"
+pr=$(( 100 - $(sysctl -n kern.memorystatus_level) ))
+if (( pr >= 80 )); then pl="${r}kritisk$n"; elif (( pr >= 50 )); then pl="${y}forhøyet$n"; else pl="${g}normal$n"; fi
+swap=$(sysctl -n vm.swapusage | sed -E 's/.*used = ([0-9.]+)M.*/\1/')
+printf '  %-10s %s %3d%%  %s · swap %.1f GB\n' Trykk "$(bar $pr)" $pr "$pl" $(( swap / 1024 ))
+
+# CPU
+section CPU
+idle=$(top -l 2 -n 0 -s 1 | awk '/CPU usage/ {v=$7} END {sub("%","",v); print v}')
+cpu=$(printf '%.0f' $(( 100 - idle )))
+printf '  %-10s %s %3d%%  %s kjerner\n' Bruk "$(bar $cpu)" $cpu "$(sysctl -n hw.ncpu)"
+
+print "\n$b Mest minne$n                        $b Mest CPU$n" | sed 's/^ //'
+paste -d'|' \
+  <(ps -Aceo rss=,comm= | sort -rn | head -5 | awk '{m=$1/1048576; $1=""; sub(/^ /,""); printf "  %-22.22s %5.1f GB\n", $0, m}') \
+  <(ps -Aceo pcpu=,comm= | sort -rn | head -5 | awk '{c=$1; $1=""; sub(/^ /,""); printf "%-22.22s %5.1f %%\n", $0, c}') |
+  sed 's/|/    /'
+
+# Strøm
+section Strøm
+pmset -g batt | awk -F'\t' 'NR==2 {split($2,a,"; "); printf "  Batteri %s · %s · %s\n", a[1], a[2], a[3]}' | sed 's/ present: true//'
+pmset -g assertions | grep -q '(Lungo)' && print "  ${g}Lungo holder Macen våken$n" || print "  ${d}Lungo av – Macen kan sove$n"
+
+# Nett
+section Nett
+lan=$(ipconfig getifaddr en0 2>/dev/null)
+ts=$(tailscale ip -4 2>/dev/null || /Applications/Tailscale.app/Contents/MacOS/Tailscale ip -4 2>/dev/null)
+print "  LAN ${lan:-–} · Tailscale ${ts:-${r}nede$n}"
+
+# Mobil-riggen
+section Rigg
+tmux has-session -t '=rc' 2>/dev/null && rc="${g}kjører$n" || rc="${r}nede$n"
+sess=$(tmux ls -F '#S' 2>/dev/null | grep -vx rc | paste -sd' ' -)
+print "  Remote Control $rc · mosh $(pgrep -x mosh-server | wc -l | tr -d ' ') · ssh $(who | grep -c ttys) · claude $(pgrep -x claude | wc -l | tr -d ' ')"
+if [[ -n $sess ]]; then print "  ${d}tmux: $sess$n"; fi

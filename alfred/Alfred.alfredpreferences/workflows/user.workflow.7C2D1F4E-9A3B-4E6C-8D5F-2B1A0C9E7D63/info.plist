@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>bundleid</key>
+	<string>no.etnan.lorem</string>
+	<key>category</key>
+	<string>Productivity</string>
+	<key>connections</key>
+	<dict>
+		<key>1B7E0D2A-4C5F-4A8B-9E3D-6F2C1A0B5D47</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>2C8F1E3B-5D6A-4B9C-8F4E-7A3D2B1C6E58</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>2C8F1E3B-5D6A-4B9C-8F4E-7A3D2B1C6E58</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>3D9A2F4C-6E7B-4CAD-9A5F-8B4E3C2D7F69</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+	</dict>
+	<key>createdby</key>
+	<string>Simon Etnan</string>
+	<key>description</key>
+	<string>Lorem ipsum med nøyaktig antall tegn til utklippstavlen</string>
+	<key>disabled</key>
+	<false/>
+	<key>name</key>
+	<string>Lorem ipsum</string>
+	<key>objects</key>
+	<array>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>alfredfiltersresults</key>
+				<false/>
+				<key>alfredfiltersresultsmatchmode</key>
+				<integer>0</integer>
+				<key>argumenttreatemptyqueryasnil</key>
+				<true/>
+				<key>argumenttrimmode</key>
+				<integer>0</integer>
+				<key>argumenttype</key>
+				<integer>1</integer>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>keyword</key>
+				<string>lorem</string>
+				<key>queuedelaycustom</key>
+				<integer>3</integer>
+				<key>queuedelayimmediatelyinitially</key>
+				<true/>
+				<key>queuedelaymode</key>
+				<integer>0</integer>
+				<key>queuemode</key>
+				<integer>1</integer>
+				<key>runningsubtext</key>
+				<string>Lager tekst …</string>
+				<key>script</key>
+				<string>/usr/bin/python3 lorem.py "$1"</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>skipuniversalaction</key>
+				<true/>
+				<key>subtext</key>
+				<string>lorem 250 → 250 tegn til utklippstavlen (standard 250)</string>
+				<key>title</key>
+				<string>Lorem ipsum</string>
+				<key>type</key>
+				<integer>11</integer>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.scriptfilter</string>
+			<key>uid</key>
+			<string>1B7E0D2A-4C5F-4A8B-9E3D-6F2C1A0B5D47</string>
+			<key>version</key>
+			<integer>3</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>autopaste</key>
+				<false/>
+				<key>clipboardtext</key>
+				<string>{query}</string>
+				<key>ignoredynamicplaceholders</key>
+				<false/>
+				<key>transient</key>
+				<false/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.output.clipboard</string>
+			<key>uid</key>
+			<string>2C8F1E3B-5D6A-4B9C-8F4E-7A3D2B1C6E58</string>
+			<key>version</key>
+			<integer>3</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>lastpathcomponent</key>
+				<false/>
+				<key>onlyshowifquerypopulated</key>
+				<true/>
+				<key>removeextension</key>
+				<false/>
+				<key>text</key>
+				<string>{var:count} tegn lorem ipsum kopiert</string>
+				<key>title</key>
+				<string>Lorem ipsum</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.output.notification</string>
+			<key>uid</key>
+			<string>3D9A2F4C-6E7B-4CAD-9A5F-8B4E3C2D7F69</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+	</array>
+	<key>readme</key>
+	<string>lorem &lt;antall&gt;: legger nøyaktig &lt;antall&gt; tegn lorem ipsum på utklippstavlen. Uten tall: 250.
+
+Teksten bygges av hele ord fra den klassiske passasjen og avsluttes med punktum; siste ord velges så lengden treffer eksakt.</string>
+	<key>uidata</key>
+	<dict>
+		<key>1B7E0D2A-4C5F-4A8B-9E3D-6F2C1A0B5D47</key>
+		<dict>
+			<key>xpos</key>
+			<integer>30</integer>
+			<key>ypos</key>
+			<integer>30</integer>
+		</dict>
+		<key>2C8F1E3B-5D6A-4B9C-8F4E-7A3D2B1C6E58</key>
+		<dict>
+			<key>xpos</key>
+			<integer>290</integer>
+			<key>ypos</key>
+			<integer>30</integer>
+		</dict>
+		<key>3D9A2F4C-6E7B-4CAD-9A5F-8B4E3C2D7F69</key>
+		<dict>
+			<key>xpos</key>
+			<integer>500</integer>
+			<key>ypos</key>
+			<integer>30</integer>
+		</dict>
+	</dict>
+	<key>userconfigurationconfig</key>
+	<array/>
+	<key>variablesdontexport</key>
+	<array/>
+	<key>version</key>
+	<string>1.0</string>
+	<key>webaddress</key>
+	<string></string>
+</dict>
+</plist>

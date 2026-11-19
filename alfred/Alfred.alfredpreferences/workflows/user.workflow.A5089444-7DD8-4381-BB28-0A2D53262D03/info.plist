@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>bundleid</key>
+	<string>no.etnan.codex-usage</string>
+	<key>category</key>
+	<string>Productivity</string>
+	<key>connections</key>
+	<dict/>
+	<key>createdby</key>
+	<string>Simon Etnan</string>
+	<key>description</key>
+	<string>Viser Codex-forbruk (rate limits), som /status i Codex CLI</string>
+	<key>disabled</key>
+	<false/>
+	<key>name</key>
+	<string>Codex Usage</string>
+	<key>objects</key>
+	<array>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>alfredfiltersresults</key>
+				<false/>
+				<key>alfredfiltersresultsmatchmode</key>
+				<integer>0</integer>
+				<key>argumenttreatemptyqueryasnil</key>
+				<true/>
+				<key>argumenttrimmode</key>
+				<integer>0</integer>
+				<key>argumenttype</key>
+				<integer>2</integer>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>keyword</key>
+				<string>cx</string>
+				<key>queuedelaycustom</key>
+				<integer>3</integer>
+				<key>queuedelayimmediatelyinitially</key>
+				<true/>
+				<key>queuedelaymode</key>
+				<integer>0</integer>
+				<key>queuemode</key>
+				<integer>1</integer>
+				<key>runningsubtext</key>
+				<string>Henter forbruk fra OpenAI…</string>
+				<key>script</key>
+				<string>/usr/bin/python3 usage.py</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>subtext</key>
+				<string>Rate limits for Codex</string>
+				<key>title</key>
+				<string>Codex Usage</string>
+				<key>type</key>
+				<integer>0</integer>
+				<key>withspace</key>
+				<false/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.scriptfilter</string>
+			<key>uid</key>
+			<string>BBAAE652-7D73-4D85-8340-1A5857E81CF8</string>
+			<key>version</key>
+			<integer>3</integer>
+		</dict>
+	</array>
+	<key>readme</key>
+	<string>Skriv "cx" i Alfred for å se Codex-forbruk (5-timersvindu og ukesvindu) med prosent og når det nullstilles.
+
+Leser tokenet Codex CLI lagrer i ~/.codex/auth.json og spør samme endepunkt som Codex bruker for /status. Ingenting sendes andre steder enn til chatgpt.com.</string>
+	<key>uidata</key>
+	<dict>
+		<key>BBAAE652-7D73-4D85-8340-1A5857E81CF8</key>
+		<dict>
+			<key>xpos</key>
+			<real>50.0</real>
+			<key>ypos</key>
+			<real>50.0</real>
+		</dict>
+	</dict>
+	<key>userconfigurationconfig</key>
+	<array/>
+	<key>version</key>
+	<string>1.0</string>
+	<key>webaddress</key>
+	<string></string>
+</dict>
+</plist>

@@ -1,0 +1,29 @@
+#!/usr/bin/env python3
+"""Git clean/smudge filter that keeps private values out of the public repo.
+
+  clean  (working tree → git):  real value  → placeholder
+  smudge (git → working tree):  placeholder → real value
+
+Pairs live outside the repo in ~/.config/dotfiles-private/filter.tsv, one per line:
+  <placeholder><TAB><real value>
+Without that file the content passes through unchanged, so a fresh clone just gets
+the placeholders. Setup on a new machine:
+  git config filter.private.clean  "$HOME/.dotfiles/bin/dotfiles-private-filter clean"
+  git config filter.private.smudge "$HOME/.dotfiles/bin/dotfiles-private-filter smudge"
+Files that use it are listed in .gitattributes.
+"""
+import os
+import sys
+
+mode = sys.argv[1] if len(sys.argv) > 1 else ""
+data = sys.stdin.buffer.read().decode("utf-8")
+path = os.path.expanduser("~/.config/dotfiles-private/filter.tsv")
+if mode in ("clean", "smudge") and os.path.isfile(path):
+    with open(path, encoding="utf-8") as f:
+        for line in f:
+            line = line.rstrip("\n")
+            if not line or line.startswith("#") or "\t" not in line:
+                continue
+            placeholder, real = line.split("\t", 1)
+            data = data.replace(real, placeholder) if mode == "clean" else data.replace(placeholder, real)
+sys.stdout.buffer.write(data.encode("utf-8"))

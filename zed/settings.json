@@ -1,0 +1,55 @@
+// Zed settings
+//
+// For information on how to configure Zed, see the Zed
+// documentation: https://zed.dev/docs/configuring-zed
+//
+// To see all of Zed's default settings without changing your
+// custom settings, run `zed: open default settings` from the
+// command palette (cmd-shift-p / ctrl-shift-p)
+{
+  "proxy": "",
+  "cli_default_open_behavior": "new_window",
+  "session": {
+    "trust_all_worktrees": true
+  },
+  "agent_servers": {
+    "github-copilot-cli": {
+      "default_config_options": {
+        "mode": "https://agentclientprotocol.com/protocol/session-modes#autopilot",
+        "allow_all": "on"
+      },
+      "type": "registry"
+    },
+    "codex-acp": {
+      "default_config_options": {
+        "reasoning_effort": "high"
+      },
+      "type": "registry"
+    }
+  },
+  "icon_theme": {
+    "mode": "dark",
+    "light": "Zed (Default)",
+    "dark": "Monospace Icon Theme - Dark"
+  },
+  "ui_font_size": 16,
+  "buffer_font_size": 15,
+  "theme": {
+    "mode": "system",
+    "light": "One Light",
+    "dark": "Ayu Classic Mirage"
+  },
+  "project_panel": {
+    "dock": "left"
+  },
+  "agent": {
+    "dock": "right"
+  },
+  "autosave": "on_focus_change",
+  "edit_predictions": {
+    "disabled_globs": [],
+    "mode": "eager",
+    "provider": "none"
+  }
+
+}

@@ -1,0 +1,2 @@
+# Private values are swapped for placeholders on commit, see bin/dotfiles-private-filter
+alfred/Alfred.alfredpreferences/preferences/features/websearch/prefs.plist filter=private

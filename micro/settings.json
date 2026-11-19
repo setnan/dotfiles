@@ -1,0 +1,4 @@
+{
+    "lsp.server": "elixir=elixir-ls",
+    "lsp.formatOnSave": true
+}
