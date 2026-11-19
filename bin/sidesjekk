@@ -1,0 +1,3 @@
+#!/bin/sh
+# Wrapper for the sidesjekk skill. See ~/.claude/skills/sidesjekk/SKILL.md.
+exec node "$HOME/.claude/skills/sidesjekk/tool/sidesjekk.mjs" "$@"
