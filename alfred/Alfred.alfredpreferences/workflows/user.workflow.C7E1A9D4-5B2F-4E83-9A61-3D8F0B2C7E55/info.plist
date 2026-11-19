@@ -98,6 +98,29 @@
 		<dict>
 			<key>config</key>
 			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>script</key>
+				<string>note_path="${innboks_path:-$HOME/Documents/Obsidian/Vault/+/Innboks.md}" /usr/bin/python3 note_add.py Notater "$1"</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>type</key>
+				<integer>11</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>C7E1A9D4-5B2F-4E83-9A61-3D8F0B2C7E03</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
 				<key>argumenttype</key>
 				<integer>0</integer>
 				<key>keyword</key>
@@ -144,25 +167,25 @@
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>concurrently</key>
-				<false/>
-				<key>escaping</key>
-				<integer>102</integer>
-				<key>script</key>
-				<string>note_path="${innboks_path:-$HOME/Documents/Obsidian/Vault/+/Innboks.md}" /usr/bin/python3 note_add.py Notater "$1"</string>
-				<key>scriptargtype</key>
-				<integer>1</integer>
-				<key>scriptfile</key>
-				<string></string>
-				<key>type</key>
-				<integer>11</integer>
+				<key>argumenttype</key>
+				<integer>0</integer>
+				<key>keyword</key>
+				<string>h</string>
+				<key>skipuniversalaction</key>
+				<true/>
+				<key>subtext</key>
+				<string>Enter: punkt i +/Handel · butikk: coop/kiwi/meny/rema/claes/bil/t/farma/apo/sunn → egen overskrift · komma = flere · tall sist = antall</string>
+				<key>text</key>
+				<string>Handel: {query}</string>
+				<key>withspace</key>
+				<true/>
 			</dict>
 			<key>type</key>
-			<string>alfred.workflow.action.script</string>
+			<string>alfred.workflow.input.keyword</string>
 			<key>uid</key>
-			<string>C7E1A9D4-5B2F-4E83-9A61-3D8F0B2C7E03</string>
+			<string>C7E1A9D4-5B2F-4E83-9A61-3D8F0B2C7E05</string>
 			<key>version</key>
-			<integer>2</integer>
+			<integer>1</integer>
 		</dict>
 		<dict>
 			<key>config</key>
@@ -186,29 +209,6 @@
 			<string>C7E1A9D4-5B2F-4E83-9A61-3D8F0B2C7E04</string>
 			<key>version</key>
 			<integer>2</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>argumenttype</key>
-				<integer>0</integer>
-				<key>keyword</key>
-				<string>h</string>
-				<key>skipuniversalaction</key>
-				<true/>
-				<key>subtext</key>
-				<string>Enter: punkt i +/Handel · butikk: coop/kiwi/meny/rema/claes/bil/t/farma/apo/sunn → egen overskrift · komma = flere · tall sist = antall</string>
-				<key>text</key>
-				<string>Handel: {query}</string>
-				<key>withspace</key>
-				<true/>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.input.keyword</string>
-			<key>uid</key>
-			<string>C7E1A9D4-5B2F-4E83-9A61-3D8F0B2C7E05</string>
-			<key>version</key>
-			<integer>1</integer>
 		</dict>
 		<dict>
 			<key>config</key>
