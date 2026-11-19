@@ -19,6 +19,8 @@ Bruk:
   tid.py editfilter [tekst]    Alfred Script Filter for `edit`
   tid.py start <prosjekt> [tid]
   tid.py stop [tid]
+  tid.py pause [prosjekt] [tid]   pause det som kjører; «pause» igjen fortsetter
+  tid.py pausefilter [tekst]   Alfred Script Filter for `pause`
   tid.py lunch [tid]           = start lunsjprosjektet (env lunch_project, standard «intern»)
   tid.py edit <prosjekt> <fra> - <til>   rett dagens rad, f.eks. «edit acme 815 - 11»
   tid.py do <fritekst>         «start acme 8», «Globex 0930», «lu», «stop 1700», «edit acme 815-11»
@@ -48,11 +50,12 @@ created:
 modified:
 aktiv:
 startet:
+pauset:
 ---
 # Timetracking
 
 Føres fra Alfred: `start <prosjekt> [tid]` starter (og avslutter det som kjører), `lu`/`lunch`
-starter lunsjprosjektet, `stop [tid]` stopper, `edit <prosjekt> 815 - 11` retter dagens rad.
+starter lunsjprosjektet, `pause` pauser/fortsetter, `stop [tid]` stopper, `edit <prosjekt> 815 - 11` retter dagens rad.
 Tid er valgfri: 8, 815, 0930, 13:45.
 Hvert prosjekt er en overskrift under. Gi et prosjekt navnet `<navn>-archived` for å skjule
 det fra forslagene, eller slett overskriften for å fjerne det.
@@ -354,11 +357,13 @@ def start(text: str) -> str:
 
     stopped = close_running(note, when)
     trimmed = note.trim_overlaps(when)
+    resumed = normalize(note.get("pauset")) == project
+    note.set("pauset", "")
     note.ensure_heading(project)
     note.set("aktiv", project)
     note.set("startet", when.isoformat())
     note.save()
-    msg = f"▶ {project} fra {when:%H:%M}"
+    msg = f"▶ {project} {'fortsetter' if resumed else 'fra'} {when:%H:%M}"
     if stopped:
         msg += f" · avsluttet {stopped}"
     return msg + _extra(trimmed)
@@ -373,6 +378,11 @@ def stop(text: str = "") -> str:
     _, t = split_time(text)
     note = Note(note_path())
     r = running(note)
+    paused = normalize(note.get("pauset"))
+    if not r and paused:
+        note.set("pauset", "")
+        note.save()
+        return f"■ {paused} var på pause, nå stoppet\n{day_summary(note)}"
     if not r:
         return "Ingen timer kjører"
     end = at_today(t) or now()
@@ -381,6 +391,30 @@ def stop(text: str = "") -> str:
     msg = close_running(note, end)
     note.save()
     return f"■ Stoppet {msg}\n{day_summary(note)}"
+
+
+def pause(text: str = "") -> str:
+    """Pauser prosjektet som kjører (raden avsluttes), eller fortsetter det som er pauset."""
+    name, t = split_time(text)
+    want = normalize(name)
+    note = Note(note_path())
+    r = running(note)
+    paused = normalize(note.get("pauset"))
+    if r:
+        if want and want not in r[0]:
+            raise Feil(f"{r[0]} kjører, ikke {want}")
+        end = at_today(t) or now()
+        if end < r[1]:
+            raise Feil(f"{end:%H:%M} er før {r[0]} startet ({r[1]:%H:%M})")
+        closed = close_running(note, end)
+        note.set("pauset", r[0])
+        note.save()
+        return f"⏸ {r[0]} på pause fra {end:%H:%M} · {closed} · «pause» igjen fortsetter"
+    if paused:
+        if want and want not in paused:
+            raise Feil(f"{paused} er på pause, ikke {want}")
+        return start(f"{paused} {t:%H:%M}" if t else paused)
+    raise Feil("Ingen timer kjører eller er på pause")
 
 
 def day_summary(note: Note, d: date | None = None) -> str:
@@ -473,6 +507,8 @@ def do(text: str) -> str:
         raise Feil("Bruk «start <prosjekt> [tid]», «<prosjekt> [tid]», «lu [tid]» eller «stop [tid]»")
     if low[0] in ("stop", "stopp"):
         return stop(" ".join(words[1:]))
+    if low[0] in ("pause", "fortsett"):
+        return pause(" ".join(words[1:]))
     if low[0] in ("lu", "lunch", "lunsj"):
         return lunch(" ".join(words[1:]))
     if low[0] == "start":
@@ -529,10 +565,14 @@ def start_filter(query: str) -> None:
     r = running(note)
     cur = now()
 
+    paused = normalize(note.get("pauset"))
+
     def last_used(item):
         n, entries = item
         if r and r[0] == n:
             return date.max
+        if n == paused:
+            return date.max - timedelta(days=1)
         return max((dt for dt, _ in entries), default=date.min)
 
     items = []
@@ -547,6 +587,9 @@ def start_filter(query: str) -> None:
             title, sub, valid = f"● {n}", f"Flytt starttid fra {r[1]:%H:%M} til {at:%H:%M} · {stats}", True
         elif is_running:
             title, sub, valid = f"● {n}", f"Kjører siden {r[1]:%H:%M} · {stats}", False
+        elif n == paused:
+            title, valid = f"⏸ {n}", True
+            sub = f"På pause · Enter fortsetter {(at or cur):%H:%M} · {stats}"
         else:
             title, valid = n, True
             sub = (f"Fra {at:%H:%M}" if at else "Start nå") + (f" · avslutter {r[0]} {(at or cur):%H:%M}" if r else "") + f" · {stats}"
@@ -629,10 +672,31 @@ def edit_filter(query: str) -> None:
     alfred([{"title": title, "subtitle": f"{fmt(secs)} ({dec(secs)} t) · bare dagens rader kan rettes her", "arg": query}])
 
 
+def pause_filter(query: str) -> None:
+    note = Note(note_path())
+    name, at, err = _time_or_error(query)
+    if err:
+        return alfred([err])
+    r = running(note)
+    paused = normalize(note.get("pauset"))
+    when = at or now()
+    if r:
+        secs = int((when - r[1]).total_seconds())
+        if when < r[1]:
+            return alfred([{"title": f"{when:%H:%M} er før {r[0]} startet ({r[1]:%H:%M})", "valid": False}])
+        return alfred([{"title": f"Pause {r[0]}" + (f" fra {at:%H:%M}" if at else ""),
+                        "subtitle": f"Avslutter økta {r[1]:%H:%M}–{when:%H:%M} ({fmt(secs)}) · «pause» igjen fortsetter",
+                        "arg": query}])
+    if paused:
+        return alfred([{"title": f"Fortsett {paused}" + (f" fra {at:%H:%M}" if at else ""),
+                        "subtitle": "Ny økt starter " + f"{when:%H:%M}", "arg": query}])
+    alfred([{"title": "Ingen timer kjører eller er på pause", "subtitle": "Start med «start <prosjekt>»", "valid": False}])
+
+
 def main(argv: list[str]) -> None:
     cmd, rest = (argv[0], " ".join(argv[1:])) if argv else ("", "")
-    filters = {"filter": start_filter, "stopfilter": stop_filter, "lunchfilter": lunch_filter, "editfilter": edit_filter}
-    actions = {"start": start, "stop": stop, "lunch": lunch, "edit": edit, "do": do}
+    filters = {"filter": start_filter, "stopfilter": stop_filter, "lunchfilter": lunch_filter, "editfilter": edit_filter, "pausefilter": pause_filter}
+    actions = {"start": start, "stop": stop, "lunch": lunch, "edit": edit, "pause": pause, "do": do}
     if cmd in filters:
         filters[cmd](rest)
     elif cmd in actions:

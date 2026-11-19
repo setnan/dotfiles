@@ -57,7 +57,7 @@ The UI text is in Norwegian, the keywords are what you type.
 | `ob` / `obsidian` | Search an Obsidian vault: recent notes when empty, otherwise title/path matches first, then full-text. ↩ opens in Obsidian, ⌘↩ opens Obsidian's own search, ⌥↩ reveals in Finder, ⌘C copies a `[[wikilink]]`. |
 | `n` / `note` | Quick capture: adds `- [ ] text` under `## Notater` in an inbox note. Commas make several items. ⌘↩ sends it to the shopping list instead. |
 | `h` / `handleliste` | Shopping list: appends a checkbox item, with store keywords that file it under a store heading and a trailing number as quantity (`milk 2`). URLs become Markdown links titled from the page. |
-| `start` / `stop` / `lu` / `edit` | **Time tracking** into one Markdown note (see below). |
+| `start` / `stop` / `pause` / `lu` / `edit` | **Time tracking** into one Markdown note (see below). |
 | `sum` / `showsum` | Summarises the clipboard with Claude into a self-refreshing HTML page: key points, a plain-language version, an analogy, plus tables, bar charts or stat tiles when the content has numbers. Extra text after `sum` is an extra instruction. |
 | `aak` / `hentak` | Keyword overview: `hentak` reads every workflow and custom web search and rebuilds a table (in a note) and an HTML page; `aak` opens the page. Your own notes in the table survive rebuilds. |
 | `lorem <n>` | Copies exactly *n* characters of lorem ipsum (whole words, ends on a full stop). Default 250. |
@@ -74,6 +74,8 @@ What is running lives in the note's frontmatter, so you can see and fix it in Ob
   hours. The previous project is closed at that same time.
 - `lu` / `lunch [time]` stops the project and starts the lunch project (configurable,
   default `intern`). `stop [time]` stops and shows a day summary.
+- `pause [time]` closes the current session and remembers the project; `pause` again (or
+  picking it in `start`) carries on with a new session.
 - `edit acme 815 - 11` corrects today's row for that project; older days are edited in
   Obsidian.
 - Delete a heading to remove a project, rename it to `<name>-archived` to hide it from

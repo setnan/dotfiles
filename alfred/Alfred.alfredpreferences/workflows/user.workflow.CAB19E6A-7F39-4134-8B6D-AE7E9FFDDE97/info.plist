@@ -34,6 +34,19 @@
 				<false/>
 			</dict>
 		</array>
+		<key>411A6E11-890D-4CB6-B68D-695D9E2B83CA</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>BC83D6B0-FABA-4C7C-8C2A-1F10955A2D5A</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
 		<key>7EE4E265-A9EF-4F2D-B767-97904A547E6B</key>
 		<array>
 			<dict>
@@ -65,6 +78,19 @@
 			<dict>
 				<key>destinationuid</key>
 				<string>BC88F4A4-A16A-4667-A72C-EB3DE1D64C0C</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>BC83D6B0-FABA-4C7C-8C2A-1F10955A2D5A</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>F58C4653-23FF-42DD-9F25-4EA7A97B9B1B</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -557,10 +583,104 @@
 			<key>version</key>
 			<integer>1</integer>
 		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>alfredfiltersresults</key>
+				<false/>
+				<key>alfredfiltersresultsmatchmode</key>
+				<integer>0</integer>
+				<key>argumenttreatemptyqueryasnil</key>
+				<true/>
+				<key>argumenttrimmode</key>
+				<integer>0</integer>
+				<key>argumenttype</key>
+				<integer>1</integer>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>keyword</key>
+				<string>pause</string>
+				<key>queuedelaycustom</key>
+				<integer>3</integer>
+				<key>queuedelayimmediatelyinitially</key>
+				<true/>
+				<key>queuedelaymode</key>
+				<integer>0</integer>
+				<key>queuemode</key>
+				<integer>1</integer>
+				<key>runningsubtext</key>
+				<string></string>
+				<key>script</key>
+				<string>timetracking_path="${timetracking_path:-$HOME/Documents/Obsidian/Vault/Calendar/Records/Timetracking.md}" lunch_project="${lunch_project:-intern}" /usr/bin/python3 tid.py pausefilter "$1"</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>subtext</key>
+				<string>Pauser prosjektet som kjører · «pause» igjen fortsetter · evt. kl.: «pause 1105»</string>
+				<key>title</key>
+				<string>Pause</string>
+				<key>type</key>
+				<integer>0</integer>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.scriptfilter</string>
+			<key>uid</key>
+			<string>411A6E11-890D-4CB6-B68D-695D9E2B83CA</string>
+			<key>version</key>
+			<integer>3</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>script</key>
+				<string>timetracking_path="${timetracking_path:-$HOME/Documents/Obsidian/Vault/Calendar/Records/Timetracking.md}" lunch_project="${lunch_project:-intern}" /usr/bin/python3 tid.py pause "$1"</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>type</key>
+				<integer>0</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>BC83D6B0-FABA-4C7C-8C2A-1F10955A2D5A</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>lastpathcomponent</key>
+				<false/>
+				<key>onlyshowifquerypopulated</key>
+				<true/>
+				<key>removeextension</key>
+				<false/>
+				<key>text</key>
+				<string>{query}</string>
+				<key>title</key>
+				<string>Timetracking</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.output.notification</string>
+			<key>uid</key>
+			<string>F58C4653-23FF-42DD-9F25-4EA7A97B9B1B</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
 	</array>
 	<key>readme</key>
 	<string>start &lt;prosjekt&gt; [tid]       – start timer, avslutter det som kjører på samme tidspunkt.
 lu / lunch [tid]             – lunsj: stopper prosjektet og starter lunsjprosjektet (innstilling, standard intern).
+pause [prosjekt] [tid]       – pause: avslutter økta og husker prosjektet. «pause» igjen (eller start) fortsetter.
 stop [tid]                   – stopp, med dagsoppsummering i varselet.
 edit &lt;prosjekt&gt; &lt;fra&gt; - &lt;til&gt; – rett dagens rad (eldre dager rettes i Obsidian). Har prosjektet flere rader
                                i dag, endres den som overlapper mest. Ingen rad i dag → legges til.
@@ -575,7 +695,7 @@ og en sumrad per dag (t:mm og desimal). Hva som kjører står i frontmatter (akt
 Slett en overskrift for å fjerne prosjektet, gi det navnet &lt;navn&gt;-archived for å skjule det.
 Prosjektnavn ligger bare i notatet ditt, aldri i workflowen.
 
-CLI: tid.py do "Globex 0930" / "start acme 8" / "lu" / "stop 1600" / "edit acme 815-11".</string>
+CLI: tid.py do "pause" / "Globex 0930" / "start acme 8" / "lu" / "stop 1600" / "edit acme 815-11".</string>
 	<key>uidata</key>
 	<dict>
 		<key>11279A5C-7137-4844-8B80-DCD319A703E0</key>
@@ -606,6 +726,13 @@ CLI: tid.py do "Globex 0930" / "start acme 8" / "lu" / "stop 1600" / "edit acme 
 			<key>ypos</key>
 			<integer>360</integer>
 		</dict>
+		<key>411A6E11-890D-4CB6-B68D-695D9E2B83CA</key>
+		<dict>
+			<key>xpos</key>
+			<integer>40</integer>
+			<key>ypos</key>
+			<integer>700</integer>
+		</dict>
 		<key>7EE4E265-A9EF-4F2D-B767-97904A547E6B</key>
 		<dict>
 			<key>xpos</key>
@@ -626,6 +753,13 @@ CLI: tid.py do "Globex 0930" / "start acme 8" / "lu" / "stop 1600" / "edit acme 
 			<integer>40</integer>
 			<key>ypos</key>
 			<integer>40</integer>
+		</dict>
+		<key>BC83D6B0-FABA-4C7C-8C2A-1F10955A2D5A</key>
+		<dict>
+			<key>xpos</key>
+			<integer>260</integer>
+			<key>ypos</key>
+			<integer>700</integer>
 		</dict>
 		<key>BC88F4A4-A16A-4667-A72C-EB3DE1D64C0C</key>
 		<dict>
@@ -668,6 +802,13 @@ CLI: tid.py do "Globex 0930" / "start acme 8" / "lu" / "stop 1600" / "edit acme 
 			<integer>480</integer>
 			<key>ypos</key>
 			<integer>200</integer>
+		</dict>
+		<key>F58C4653-23FF-42DD-9F25-4EA7A97B9B1B</key>
+		<dict>
+			<key>xpos</key>
+			<integer>480</integer>
+			<key>ypos</key>
+			<integer>700</integer>
 		</dict>
 	</dict>
 	<key>userconfigurationconfig</key>
