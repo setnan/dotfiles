@@ -34,6 +34,19 @@
 				<false/>
 			</dict>
 		</array>
+		<key>7D8351BF-F5D1-48B0-BB09-FE935E39FADB</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>77CEF190-0954-461D-80A3-197B046C4806</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
 	</dict>
 	<key>createdby</key>
 	<string>Simon Etnan</string>
@@ -110,9 +123,53 @@
 			<key>version</key>
 			<integer>1</integer>
 		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argumenttype</key>
+				<integer>2</integer>
+				<key>keyword</key>
+				<string>showsum</string>
+				<key>subtext</key>
+				<string>Åpner siste sammendrag i eget vindu</string>
+				<key>text</key>
+				<string>Vis sammendraget</string>
+				<key>withspace</key>
+				<false/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.keyword</string>
+			<key>uid</key>
+			<string>7D8351BF-F5D1-48B0-BB09-FE935E39FADB</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>script</key>
+				<string>/usr/bin/python3 summarize.py vis</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>type</key>
+				<integer>11</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>77CEF190-0954-461D-80A3-197B046C4806</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
 	</array>
 	<key>readme</key>
-	<string>sum [ekstra instruks]: leser utklippstavlen og lar Claude skrive det viktigste, en forenkling nesten alle forstår og en analogi (gjengitt fra teksten hvis den finnes der). Skrives til HTML-sida («sum vis» åpner den i et eget vindu, den oppdaterer seg selv), som overskrives hver gang. Valgfri tekstfil i tillegg via «Tekstfil».
+	<string>sum [ekstra instruks]: leser utklippstavlen og lar Claude skrive det viktigste, en forenkling nesten alle forstår og en analogi (gjengitt fra teksten hvis den finnes der). Skrives til HTML-sida («showsum» eller «sum vis» åpner den i et eget vindu, den oppdaterer seg selv), som overskrives hver gang. Valgfri tekstfil i tillegg via «Tekstfil».
 
 Claude får et lite kontekstbrief om hva du jobber med (siste «Kontekst»-timer med Claude-aktivitet på maskinen); briefen bygges i minnet og lagres ikke.</string>
 	<key>uidata</key>
@@ -137,6 +194,20 @@ Claude får et lite kontekstbrief om hva du jobber med (siste «Kontekst»-timer
 			<integer>500</integer>
 			<key>ypos</key>
 			<integer>30</integer>
+		</dict>
+		<key>77CEF190-0954-461D-80A3-197B046C4806</key>
+		<dict>
+			<key>xpos</key>
+			<real>300.0</real>
+			<key>ypos</key>
+			<real>180.0</real>
+		</dict>
+		<key>7D8351BF-F5D1-48B0-BB09-FE935E39FADB</key>
+		<dict>
+			<key>xpos</key>
+			<real>50.0</real>
+			<key>ypos</key>
+			<real>180.0</real>
 		</dict>
 	</dict>
 	<key>userconfigurationconfig</key>
