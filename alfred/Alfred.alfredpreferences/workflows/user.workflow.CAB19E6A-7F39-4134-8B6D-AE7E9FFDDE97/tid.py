@@ -44,6 +44,8 @@ MIN_SECONDS = 60  # økter under ett minutt (feiltrykk, raskt bytte) logges ikke
 
 TEMPLATE = """\
 ---
+created:
+modified:
 aktiv:
 startet:
 ---
@@ -253,8 +255,21 @@ class Note:
             lines.insert(i + 1, f"| {d.isoformat()} | **Sum** | | **{fmt(total[(p, d)])}** ({dec(total[(p, d)])} t) |")
         self.text = "\n".join(lines)
 
+    def stamp(self) -> None:
+        """`created` (dato, settes én gang) og `modified` (dato og tid) øverst i frontmatter."""
+        created = self.get("created") or date.today().isoformat()
+        self.set("created", "")
+        self.set("modified", "")
+        span = self._fm()
+        fm = self.text[span[0]:span[1]]
+        fm = "\n".join(line for line in fm.split("\n") if not re.match(r"^(created|modified):", line))
+        top = f"created: {created}\nmodified: {now():%Y-%m-%dT%H:%M}"
+        fm = top + ("\n" + fm if fm.strip() else "")
+        self.text = self.text[:span[0]] + fm + self.text[span[1]:]
+
     def save(self) -> None:
         self.refresh_sums()
+        self.stamp()
         self.path.parent.mkdir(parents=True, exist_ok=True)
         fd, tmp = tempfile.mkstemp(dir=self.path.parent, prefix=".timetracking-", suffix=".tmp")
         with os.fdopen(fd, "w", encoding="utf-8") as f:
