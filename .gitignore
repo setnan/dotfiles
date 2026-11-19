@@ -24,3 +24,6 @@ __pycache__/
 
 # Server bootstrap with private infrastructure details stays local
 server/bootstrap-dev.sh
+
+# Minecraft workflow (personal servers) stays local
+alfred/Alfred.alfredpreferences/workflows/user.workflow.A6668DF8-5000-4259-B784-12ED318B3499/
