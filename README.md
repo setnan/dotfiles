@@ -63,7 +63,8 @@ The UI text is in Norwegian, the keywords are what you type.
 | `lorem <n>` | Copies exactly *n* characters of lorem ipsum (whole words, ends on a full stop). Default 250. |
 
 **Time tracking** (`Timetracking`). The note is the source of truth: every project is a
-`## heading` with a table of sessions and a **Sum** row per day (`h:mm` and decimal hours).
+`## heading` with a table of sessions (to the minute) and a **Sum** row per day, rounded up
+to the nearest quarter of an hour (`h:mm` and decimal hours).
 What is running lives in the note's frontmatter, so you can see and fix it in Obsidian.
 
 - `start acme` starts a project and closes whatever was running. Typing a new name creates

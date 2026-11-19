@@ -54,7 +54,7 @@ pauset:
 ---
 # Timetracking
 
-Føres fra Alfred: `start <prosjekt> [tid]` starter (og avslutter det som kjører), `lu`/`lunch`
+Dagssummen per prosjekt rundes opp til nærmeste kvarter. Føres fra Alfred: `start <prosjekt> [tid]` starter (og avslutter det som kjører), `lu`/`lunch`
 starter lunsjprosjektet, `pause` pauser/fortsetter, `stop [tid]` stopper, `edit <prosjekt> 815 - 11` retter dagens rad.
 Tid er valgfri: 8, 815, 0930, 13:45.
 Hvert prosjekt er en overskrift under. Gi et prosjekt navnet `<navn>-archived` for å skjule
@@ -246,7 +246,7 @@ class Note:
         return notes
 
     def refresh_sums(self) -> None:
-        """Én sumrad nederst i hver dag per prosjekt: timer:minutter og desimal."""
+        """Én sumrad nederst i hver dag per prosjekt, rundet opp til nærmeste kvarter (t:mm og desimal)."""
         lines = [line for line in self.text.split("\n") if not SUM_ROW.match(line)]
         self.text = "\n".join(lines)
         last: dict[tuple[str, date], int] = {}
@@ -255,7 +255,8 @@ class Note:
             last[(p, d)] = i
             total[(p, d)] = total.get((p, d), 0) + secs
         for (p, d), i in sorted(last.items(), key=lambda kv: kv[1], reverse=True):
-            lines.insert(i + 1, f"| {d.isoformat()} | **Sum** | | **{fmt(total[(p, d)])}** ({dec(total[(p, d)])} t) |")
+            q = round_up(total[(p, d)])
+            lines.insert(i + 1, f"| {d.isoformat()} | **Sum** | | **{fmt(q)}** ({dec(q)} t) |")
         self.text = "\n".join(lines)
 
     def stamp(self) -> None:
@@ -293,6 +294,15 @@ def _row(project: str, d: date, s: datetime, e: datetime, secs: int) -> str:
 
 
 # ---------- logikk ----------
+
+QUARTER = 15  # dagssummen per prosjekt rundes opp til nærmeste kvarter
+
+
+def round_up(seconds: int) -> int:
+    """Opp til nærmeste kvarter: 1:32 → 1:45, 1:30 → 1:30, 0:01 → 0:15."""
+    m = int(round(seconds / 60))
+    return -(-m // QUARTER) * QUARTER * 60
+
 
 def fmt(seconds: int) -> str:
     m = int(round(seconds / 60))
@@ -425,6 +435,7 @@ def day_summary(note: Note, d: date | None = None) -> str:
             per[p] = per.get(p, 0) + secs
     if not per:
         return "Ingenting ført i dag"
+    per = {p: round_up(s) for p, s in per.items()}
     parts = [f"{p} {fmt(s)} ({dec(s)})" for p, s in per.items()]
     tot = sum(per.values())
     return f"I dag: {' · '.join(parts)} · totalt {fmt(tot)} ({dec(tot)} t)"
